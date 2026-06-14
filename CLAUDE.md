@@ -3,6 +3,9 @@
 ## Project Overview
 コーヒーショップ「Stark Jet」の公式Webサイト
 
+## Live URL
+https://jime0083.github.io/Stark-jet/
+
 ## Tech Stack
 - **Framework**: React (SPA - Single Page Application)
 - **Styling**: CSS (vanilla)
