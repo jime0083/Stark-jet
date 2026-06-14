@@ -76,19 +76,7 @@ const Section = ({ data, isExpanded, onToggle }) => {
       <div className="section-left" onClick={onToggle}>
         <div className="title-row">
           <h2 className="section-title">{data.title}</h2>
-          <span className="section-number">{data.number}</span>
         </div>
-
-        <button
-          className={`expand-btn ${isExpanded ? 'active' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle();
-          }}
-          aria-label={isExpanded ? 'Close details' : 'Open details'}
-        >
-          +
-        </button>
 
         <div className={`detail-panel ${isExpanded ? 'active' : ''}`}>
           <div className="detail-content">

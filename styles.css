@@ -87,44 +87,6 @@ body {
   white-space: nowrap;
 }
 
-.section-number {
-  font-weight: 400;
-  font-size: 0.85rem;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  color: var(--text-cream);
-}
-
-/* Expand button */
-.expand-btn {
-  position: absolute;
-  bottom: 40px;
-  right: 32px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid var(--text-cream-muted);
-  background: transparent;
-  color: var(--text-cream);
-  font-size: 24px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-  z-index: 10;
-}
-
-.expand-btn:hover {
-  background: var(--text-cream);
-  color: var(--bg-dark);
-  transform: scale(1.1);
-}
-
-.expand-btn.active {
-  transform: rotate(45deg);
-}
-
 /* Right column - 50% width */
 .section-right {
   width: 50%;
@@ -331,14 +293,6 @@ body {
   .detail-panel.active {
     max-height: 50vh;
     padding: 24px 24px 40px;
-  }
-
-  .expand-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    bottom: 24px;
-    right: 24px;
   }
 
   .scroll-indicator {
