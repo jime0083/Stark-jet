@@ -46,6 +46,13 @@ git push origin master
 # npm run deploy（package.json設定後）
 ```
 
+## Brand Assets
+
+### Official Logo
+- **ファイル**: `images/ロゴ.png`
+- **用途**: ファビコン、ヘッダーロゴ、OGP画像、その他ブランディング全般
+- **重要**: サイトのロゴが必要な場合は必ずこの画像を使用すること
+
 ## Design Specifications
 - カラースキーム: ダーク（#0e0d0c）+ クリーム（#f0ece4）
 - レイアウト: 左右50/50分割、フルスクリーンセクション
