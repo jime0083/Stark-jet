@@ -13,10 +13,15 @@
 <body>
   <div id="root"></div>
   <script>
-const { useState, useRef, useEffect, createElement: h, Fragment } = React;
+var useState = React.useState;
+var useRef = React.useRef;
+var useEffect = React.useEffect;
+var useCallback = React.useCallback;
+var h = React.createElement;
+var Fragment = React.Fragment;
 
 // Section data with multiple images for gallery
-const sections = [
+var sections = [
   {
     id: 1,
     title: "Stark Jet",
@@ -134,8 +139,17 @@ function ChevronDown() {
 }
 
 // Section component for main view
-function Section({ data, onClick }) {
-  return h('section', { className: "section", id: "section-" + data.id, onClick: onClick },
+function Section(props) {
+  var data = props.data;
+  var onClick = props.onClick;
+  var sectionRef = props.sectionRef;
+
+  return h('section', {
+    className: "section",
+    id: "section-" + data.id,
+    onClick: onClick,
+    ref: sectionRef
+  },
     h('div', { className: "section-left" },
       h('div', { className: "title-row" },
         h('h2', { className: "section-title" }, data.title)
@@ -152,11 +166,14 @@ function Section({ data, onClick }) {
   );
 }
 
-// Detail View component
-function DetailView({ data, isActive, onClose }) {
-  var galleryRef = useRef(null);
+// Detail View with expanding animation
+function DetailView(props) {
+  var data = props.data;
+  var isActive = props.isActive;
+  var isExpanded = props.isExpanded;
+  var initialRect = props.initialRect;
+  var onClose = props.onClose;
 
-  // Handle escape key to close
   useEffect(function() {
     function handleKeyDown(e) {
       if (e.key === 'Escape' && isActive) {
@@ -187,28 +204,42 @@ function DetailView({ data, isActive, onClose }) {
     );
   });
 
-  return h('div', { className: "detail-view" + (isActive ? " active" : "") },
-    h('div', { className: "detail-left" },
-      h('button', { className: "detail-back", onClick: onClose },
-        h(BackIcon),
-        "戻る"
-      ),
-      h('div', { className: "detail-header" },
-        h('h1', { className: "detail-title" }, data.title),
-        h('p', { className: "detail-subtitle" }, data.subtitle)
-      ),
-      h('p', { className: "detail-description" }, data.description),
-      h('div', { className: "detail-meta" }, metaItems),
-      h('a', { href: data.link, className: "detail-link" },
-        data.linkText,
-        h(ArrowIcon)
-      )
-    ),
-    h('div', { className: "detail-right", ref: galleryRef },
-      h('div', { className: "gallery" }, galleryImages),
-      h('div', { className: "scroll-hint" },
-        h('span', null, "Scroll"),
-        h(ChevronDown)
+  var frameStyle = initialRect ? {
+    top: initialRect.top + 'px',
+    left: initialRect.left + 'px',
+    width: initialRect.width + 'px',
+    height: initialRect.height + 'px'
+  } : {};
+
+  return h('div', { className: "detail-overlay" + (isActive ? " active" : "") },
+    h('div', {
+      className: "expanding-frame" + (isExpanded ? " expanded" : ""),
+      style: frameStyle
+    },
+      h('div', { className: "detail-content-wrapper" },
+        h('div', { className: "detail-left" },
+          h('button', { className: "detail-back", onClick: onClose },
+            h(BackIcon),
+            "戻る"
+          ),
+          h('div', { className: "detail-header" },
+            h('h1', { className: "detail-title" }, data.title),
+            h('p', { className: "detail-subtitle" }, data.subtitle)
+          ),
+          h('p', { className: "detail-description" }, data.description),
+          h('div', { className: "detail-meta" }, metaItems),
+          h('a', { href: data.link, className: "detail-link" },
+            data.linkText,
+            h(ArrowIcon)
+          )
+        ),
+        h('div', { className: "detail-right" },
+          h('div', { className: "gallery" }, galleryImages),
+          h('div', { className: "scroll-hint" },
+            h('span', null, "Scroll"),
+            h(ChevronDown)
+          )
+        )
       )
     )
   );
@@ -216,25 +247,126 @@ function DetailView({ data, isActive, onClose }) {
 
 // Main App component
 function App() {
-  var selectedSectionState = useState(null);
-  var selectedSection = selectedSectionState[0];
-  var setSelectedSection = selectedSectionState[1];
+  var selectedState = useState(null);
+  var selectedSection = selectedState[0];
+  var setSelectedSection = selectedState[1];
+
+  var rectState = useState(null);
+  var initialRect = rectState[0];
+  var setInitialRect = rectState[1];
+
+  var expandedState = useState(false);
+  var isExpanded = expandedState[0];
+  var setIsExpanded = expandedState[1];
+
+  var currentSectionState = useState(0);
+  var currentSection = currentSectionState[0];
+  var setCurrentSection = currentSectionState[1];
 
   var containerRef = useRef(null);
+  var sectionRefs = useRef([]);
+  var isScrollingRef = useRef(false);
+  var scrollTimeoutRef = useRef(null);
 
-  function handleSectionClick(sectionData) {
-    setSelectedSection(sectionData);
+  // Custom scroll handling - 30% threshold for smooth transition
+  useEffect(function() {
+    var container = containerRef.current;
+    if (!container) return;
+
+    var viewportHeight = window.innerHeight;
+    var threshold = 0.3; // 30%
+
+    function handleScroll() {
+      if (isScrollingRef.current) return;
+
+      var scrollTop = container.scrollTop;
+      var currentSectionIndex = Math.floor(scrollTop / viewportHeight);
+      var sectionOffset = scrollTop % viewportHeight;
+      var scrollRatio = sectionOffset / viewportHeight;
+
+      // Clear any pending timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Set timeout to check scroll position after user stops scrolling
+      scrollTimeoutRef.current = setTimeout(function() {
+        var newScrollTop = container.scrollTop;
+        var newCurrentSection = Math.floor(newScrollTop / viewportHeight);
+        var newOffset = newScrollTop % viewportHeight;
+        var newRatio = newOffset / viewportHeight;
+
+        // If scrolled more than 30%, go to next section
+        // If scrolled less than 30%, go back to current section
+        var targetSection;
+        if (newRatio > threshold) {
+          targetSection = newCurrentSection + 1;
+        } else if (newRatio > 0 && newRatio <= threshold) {
+          targetSection = newCurrentSection;
+        } else {
+          return; // Already at section boundary
+        }
+
+        // Clamp to valid range
+        targetSection = Math.max(0, Math.min(targetSection, sections.length - 1));
+
+        // Smooth scroll to target section
+        isScrollingRef.current = true;
+        var targetScroll = targetSection * viewportHeight;
+
+        container.scrollTo({
+          top: targetScroll,
+          behavior: 'smooth'
+        });
+
+        setCurrentSection(targetSection);
+
+        // Reset scrolling flag after animation
+        setTimeout(function() {
+          isScrollingRef.current = false;
+        }, 800);
+      }, 150); // Wait 150ms after scroll stops
+    }
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+
+    return function() {
+      container.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  function handleSectionClick(sectionData, index) {
+    var sectionEl = sectionRefs.current[index];
+    if (sectionEl) {
+      var rect = sectionEl.getBoundingClientRect();
+      setInitialRect(rect);
+      setSelectedSection(sectionData);
+
+      // Trigger expansion after a small delay for the initial position to be set
+      setTimeout(function() {
+        setIsExpanded(true);
+      }, 50);
+    }
   }
 
   function handleClose() {
-    setSelectedSection(null);
+    setIsExpanded(false);
+    // Wait for collapse animation, then hide
+    setTimeout(function() {
+      setSelectedSection(null);
+      setInitialRect(null);
+    }, 800);
   }
 
-  var sectionElements = sections.map(function(section) {
+  var sectionElements = sections.map(function(section, index) {
     return h(Section, {
       key: section.id,
       data: section,
-      onClick: function() { handleSectionClick(section); }
+      sectionRef: function(el) { sectionRefs.current[index] = el; },
+      onClick: function() { handleSectionClick(section, index); }
     });
   });
 
@@ -246,6 +378,8 @@ function App() {
     h(DetailView, {
       data: selectedSection,
       isActive: selectedSection !== null,
+      isExpanded: isExpanded,
+      initialRect: initialRect,
       onClose: handleClose
     })
   );

@@ -27,11 +27,10 @@ body {
   color: var(--text-cream);
 }
 
-/* Main scroll container - proximity snap for natural feel */
+/* Main scroll container */
 .scroll-container {
   height: 100vh;
   overflow-y: scroll;
-  scroll-snap-type: y proximity;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -40,7 +39,6 @@ body {
   display: none;
 }
 
-/* Hide scroll container when detail is open */
 .scroll-container.hidden {
   display: none;
 }
@@ -49,10 +47,10 @@ body {
 .section {
   width: 100vw;
   height: 100vh;
-  scroll-snap-align: start;
   display: flex;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 /* Left column - 50% width */
@@ -65,11 +63,10 @@ body {
   justify-content: flex-end;
   padding: 0 32px 15vh 40px;
   position: relative;
-  cursor: pointer;
   transition: background var(--transition-fast);
 }
 
-.section-left:hover {
+.section:hover .section-left {
   background: #151413;
 }
 
@@ -112,25 +109,48 @@ body {
 }
 
 /* ============================================
-   Detail View - Full screen expanded view
+   Expanding Detail View
    ============================================ */
-.detail-view {
+.detail-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: var(--bg-dark);
   z-index: 1000;
-  display: flex;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  pointer-events: none;
 }
 
-.detail-view.active {
+.detail-overlay.active {
+  pointer-events: auto;
+}
+
+/* Expanding frame animation */
+.expanding-frame {
+  position: absolute;
+  background: var(--bg-dark);
+  overflow: hidden;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expanding-frame.expanded {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+/* Detail content inside frame */
+.detail-content-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.4s;
+}
+
+.expanding-frame.expanded .detail-content-wrapper {
   opacity: 1;
-  visibility: visible;
 }
 
 /* Detail Left - Description */
@@ -288,6 +308,7 @@ body {
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  z-index: 10;
 }
 
 .scroll-hint svg {
@@ -330,7 +351,7 @@ body {
     font-size: clamp(2rem, 8vw, 3rem);
   }
 
-  .detail-view {
+  .detail-content-wrapper {
     flex-direction: column;
   }
 
@@ -376,36 +397,4 @@ body {
 
 .section-left > *:nth-child(1) {
   animation-delay: 0.1s;
-}
-
-/* Detail view animations */
-.detail-left > * {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.detail-view.active .detail-left > * {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.detail-view.active .detail-back {
-  transition-delay: 0.1s;
-}
-
-.detail-view.active .detail-header {
-  transition-delay: 0.2s;
-}
-
-.detail-view.active .detail-description {
-  transition-delay: 0.3s;
-}
-
-.detail-view.active .detail-meta {
-  transition-delay: 0.4s;
-}
-
-.detail-view.active .detail-link {
-  transition-delay: 0.5s;
 }
