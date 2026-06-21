@@ -13,54 +13,100 @@
 <body>
   <div id="root"></div>
   <script>
-const { useState, useRef, createElement: h } = React;
+const { useState, useRef, useEffect, createElement: h, Fragment } = React;
 
-// Section data
+// Section data with multiple images for gallery
 const sections = [
   {
     id: 1,
     title: "Stark Jet",
     image: "images/コーヒーとコーヒー豆1.png",
-    detailTitle: "Welcome to Stark Jet",
-    description: "深煎りの豆と心地よい空間で、最高の一杯をお届けします。2015年の創業以来、こだわり抜いたコーヒーと温かいおもてなしで、多くのお客様にご愛顧いただいております。",
+    subtitle: "Welcome to Stark Jet",
+    description: "深煎りの豆と心地よい空間で、最高の一杯をお届けします。2015年の創業以来、こだわり抜いたコーヒーと温かいおもてなしで、多くのお客様にご愛顧いただいております。私たちは、コーヒーを通じて日常に小さな幸せをお届けすることを使命としています。",
+    meta: [
+      { label: "設立", value: "2015年" },
+      { label: "所在地", value: "東京都渋谷区" }
+    ],
     link: "#about",
-    linkText: "About Us"
+    linkText: "詳しく見る",
+    gallery: [
+      "images/コーヒーとコーヒー豆1.png",
+      "images/コーヒーとコーヒー豆2.png",
+      "images/ロケーション1.png"
+    ]
   },
   {
     id: 2,
     title: "Philosophy",
     image: "images/コーヒー豆1.png",
-    detailTitle: "Our Philosophy",
-    description: "一杯のコーヒーに込める想い。厳選された産地から直接仕入れた豆を、熟練のロースターが丁寧に焙煎。豆本来の風味を最大限に引き出すことに全力を注いでいます。",
+    subtitle: "Our Philosophy",
+    description: "一杯のコーヒーに込める想い。厳選された産地から直接仕入れた豆を、熟練のロースターが丁寧に焙煎。豆本来の風味を最大限に引き出すことに全力を注いでいます。私たちは、品質に一切の妥協を許しません。",
+    meta: [
+      { label: "焙煎", value: "自家焙煎" },
+      { label: "産地", value: "エチオピア、コロンビア、ケニア" }
+    ],
     link: "#philosophy",
-    linkText: "Learn More"
+    linkText: "詳しく見る",
+    gallery: [
+      "images/コーヒー豆1.png",
+      "images/コーヒー豆2.png",
+      "images/コーヒー豆パック1.png"
+    ]
   },
   {
     id: 3,
     title: "Location",
     image: "images/ロケーション1.png",
-    detailTitle: "Our Space",
-    description: "落ち着いた雰囲気の店内で、ゆったりとした時間をお過ごしください。木のぬくもりを感じる内装と、自然光が差し込む大きな窓が特徴です。Wi-Fi完備、電源席もご用意しております。",
+    subtitle: "Our Space",
+    description: "落ち着いた雰囲気の店内で、ゆったりとした時間をお過ごしください。木のぬくもりを感じる内装と、自然光が差し込む大きな窓が特徴です。Wi-Fi完備、電源席もご用意しております。仕事にも、読書にも、会話にも最適な空間です。",
+    meta: [
+      { label: "席数", value: "32席" },
+      { label: "設備", value: "Wi-Fi、電源完備" }
+    ],
     link: "#location",
-    linkText: "View Map"
+    linkText: "アクセス",
+    gallery: [
+      "images/ロケーション1.png",
+      "images/ロケーション2.png",
+      "images/カフェ外観1.png"
+    ]
   },
   {
     id: 4,
     title: "Sale",
     image: "images/コーヒー豆パック1.png",
-    detailTitle: "Coffee Beans",
-    description: "ご自宅でもStark Jetの味をお楽しみいただけます。エチオピア、コロンビア、ケニアなど、世界各地から厳選した豆を販売中。オンラインショップでもお買い求めいただけます。",
+    subtitle: "Coffee Beans",
+    description: "ご自宅でもStark Jetの味をお楽しみいただけます。エチオピア、コロンビア、ケニアなど、世界各地から厳選した豆を販売中。オンラインショップでもお買い求めいただけます。贈り物にも最適なギフトセットもご用意しております。",
+    meta: [
+      { label: "価格", value: "¥1,200〜" },
+      { label: "配送", value: "全国対応" }
+    ],
     link: "#shop",
-    linkText: "Shop Now"
+    linkText: "ショップへ",
+    gallery: [
+      "images/コーヒー豆パック1.png",
+      "images/コーヒー豆パック2.png",
+      "images/コーヒー豆1.png"
+    ]
   },
   {
     id: 5,
     title: "VISIT US",
     image: "images/カフェ外観1.png",
-    detailTitle: "Come Visit",
-    description: "東京都渋谷区神南1-2-3 Stark Jet Building 1F\n営業時間: 8:00 - 21:00（年中無休）\n最寄り駅: 渋谷駅 徒歩5分",
+    subtitle: "Come Visit",
+    description: "皆様のご来店を心よりお待ちしております。渋谷駅から徒歩5分、都会の喧騒を忘れられる静かな空間で、特別な一杯をお楽しみください。",
+    meta: [
+      { label: "住所", value: "東京都渋谷区神南1-2-3" },
+      { label: "営業時間", value: "8:00 - 21:00（年中無休）" },
+      { label: "アクセス", value: "渋谷駅 徒歩5分" }
+    ],
     link: "#contact",
-    linkText: "Get Directions"
+    linkText: "お問い合わせ",
+    gallery: [
+      "images/カフェ外観1.png",
+      "images/カフェ外観2.png",
+      "images/ロケーション1.png"
+    ]
   }
 ];
 
@@ -72,23 +118,27 @@ function ArrowIcon() {
   );
 }
 
-// Section component
-function Section({ data, isExpanded, onToggle }) {
-  return h('section', { className: "section", id: "section-" + data.id },
-    h('div', { className: "section-left", onClick: onToggle },
+// Back arrow icon
+function BackIcon() {
+  return h('svg', { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+    h('line', { x1: "19", y1: "12", x2: "5", y2: "12" }),
+    h('polyline', { points: "12 19 5 12 12 5" })
+  );
+}
+
+// Chevron down icon
+function ChevronDown() {
+  return h('svg', { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+    h('polyline', { points: "6 9 12 15 18 9" })
+  );
+}
+
+// Section component for main view
+function Section({ data, onClick }) {
+  return h('section', { className: "section", id: "section-" + data.id, onClick: onClick },
+    h('div', { className: "section-left" },
       h('div', { className: "title-row" },
         h('h2', { className: "section-title" }, data.title)
-      ),
-      h('div', { className: "detail-panel" + (isExpanded ? " active" : "") },
-        h('div', { className: "detail-content" },
-          h('h3', { className: "detail-title" }, data.detailTitle),
-          h('p', { className: "detail-description" }, data.description),
-          h('a', { href: data.link, className: "detail-link" },
-            data.linkText,
-            h(ArrowIcon)
-          )
-        ),
-        h('span', { className: "close-hint" }, "Click to close")
       )
     ),
     h('div', { className: "section-right" },
@@ -102,32 +152,107 @@ function Section({ data, isExpanded, onToggle }) {
   );
 }
 
-// Main App component
-function App() {
-  const expandedSectionState = useState(null);
-  const expandedSection = expandedSectionState[0];
-  const setExpandedSection = expandedSectionState[1];
+// Detail View component
+function DetailView({ data, isActive, onClose }) {
+  var galleryRef = useRef(null);
 
-  const containerRef = useRef(null);
+  // Handle escape key to close
+  useEffect(function() {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' && isActive) {
+        onClose();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return function() {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isActive, onClose]);
 
-  function handleToggle(sectionId) {
-    setExpandedSection(expandedSection === sectionId ? null : sectionId);
-  }
+  if (!data) return null;
 
-  const sectionElements = sections.map(function(section) {
-    return h(Section, {
-      key: section.id,
-      data: section,
-      isExpanded: expandedSection === section.id,
-      onToggle: function() { handleToggle(section.id); }
+  var galleryImages = data.gallery.map(function(src, index) {
+    return h('img', {
+      key: index,
+      src: src,
+      alt: data.title + " - Image " + (index + 1),
+      className: "gallery-image"
     });
   });
 
-  return h('div', { className: "scroll-container", ref: containerRef }, sectionElements);
+  var metaItems = data.meta.map(function(item, index) {
+    return h('div', { key: index, className: "detail-meta-item" },
+      h('span', { className: "detail-meta-label" }, item.label),
+      h('span', { className: "detail-meta-value" }, item.value)
+    );
+  });
+
+  return h('div', { className: "detail-view" + (isActive ? " active" : "") },
+    h('div', { className: "detail-left" },
+      h('button', { className: "detail-back", onClick: onClose },
+        h(BackIcon),
+        "戻る"
+      ),
+      h('div', { className: "detail-header" },
+        h('h1', { className: "detail-title" }, data.title),
+        h('p', { className: "detail-subtitle" }, data.subtitle)
+      ),
+      h('p', { className: "detail-description" }, data.description),
+      h('div', { className: "detail-meta" }, metaItems),
+      h('a', { href: data.link, className: "detail-link" },
+        data.linkText,
+        h(ArrowIcon)
+      )
+    ),
+    h('div', { className: "detail-right", ref: galleryRef },
+      h('div', { className: "gallery" }, galleryImages),
+      h('div', { className: "scroll-hint" },
+        h('span', null, "Scroll"),
+        h(ChevronDown)
+      )
+    )
+  );
+}
+
+// Main App component
+function App() {
+  var selectedSectionState = useState(null);
+  var selectedSection = selectedSectionState[0];
+  var setSelectedSection = selectedSectionState[1];
+
+  var containerRef = useRef(null);
+
+  function handleSectionClick(sectionData) {
+    setSelectedSection(sectionData);
+  }
+
+  function handleClose() {
+    setSelectedSection(null);
+  }
+
+  var sectionElements = sections.map(function(section) {
+    return h(Section, {
+      key: section.id,
+      data: section,
+      onClick: function() { handleSectionClick(section); }
+    });
+  });
+
+  return h(Fragment, null,
+    h('div', {
+      className: "scroll-container" + (selectedSection ? " hidden" : ""),
+      ref: containerRef
+    }, sectionElements),
+    h(DetailView, {
+      data: selectedSection,
+      isActive: selectedSection !== null,
+      onClose: handleClose
+    })
+  );
 }
 
 // Render the app
-const root = ReactDOM.createRoot(document.getElementById('root'));
+var root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(h(App));
   </script>
 </body>

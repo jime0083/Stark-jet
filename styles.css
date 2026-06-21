@@ -27,10 +27,11 @@ body {
   color: var(--text-cream);
 }
 
-/* Main scroll container - natural scrolling */
+/* Main scroll container - proximity snap for natural feel */
 .scroll-container {
   height: 100vh;
   overflow-y: scroll;
+  scroll-snap-type: y proximity;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -39,10 +40,16 @@ body {
   display: none;
 }
 
+/* Hide scroll container when detail is open */
+.scroll-container.hidden {
+  display: none;
+}
+
 /* Each section is full viewport height */
 .section {
   width: 100vw;
   height: 100vh;
+  scroll-snap-align: start;
   display: flex;
   position: relative;
   overflow: hidden;
@@ -66,7 +73,7 @@ body {
   background: #151413;
 }
 
-/* Title and number container */
+/* Title container */
 .title-row {
   display: flex;
   align-items: baseline;
@@ -104,64 +111,127 @@ body {
   transform: scale(1.05);
 }
 
-/* Expanded detail panel */
-.detail-panel {
-  position: absolute;
-  bottom: 0;
+/* ============================================
+   Detail View - Full screen expanded view
+   ============================================ */
+.detail-view {
+  position: fixed;
+  top: 0;
   left: 0;
-  width: 100%;
-  background: linear-gradient(to top, rgba(14, 13, 12, 0.98), rgba(14, 13, 12, 0.9));
-  padding: 0 40px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height var(--transition-medium), padding var(--transition-medium);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.detail-panel.active {
-  max-height: 60vh;
-  padding: 40px 40px 60px;
-}
-
-.detail-content {
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-dark);
+  z-index: 1000;
+  display: flex;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
-.detail-panel.active .detail-content {
+.detail-view.active {
   opacity: 1;
-  transform: translateY(0);
+  visibility: visible;
+}
+
+/* Detail Left - Description */
+.detail-left {
+  width: 50%;
+  height: 100%;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 60px 60px 80px;
+  position: relative;
+}
+
+.detail-back {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-cream-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.detail-back:hover {
+  color: var(--text-cream);
+}
+
+.detail-back svg {
+  width: 20px;
+  height: 20px;
+}
+
+.detail-header {
+  margin-bottom: 40px;
 }
 
 .detail-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  font-weight: 700;
+  color: var(--text-cream);
   margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.detail-subtitle {
+  font-size: 1.1rem;
   color: var(--accent);
+  font-weight: 500;
 }
 
 .detail-description {
-  font-size: 1rem;
-  line-height: 1.8;
+  font-size: 1.1rem;
+  line-height: 1.9;
   color: var(--text-cream-muted);
-  margin-bottom: 24px;
-  max-width: 500px;
+  margin-bottom: 40px;
+  max-width: 480px;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.detail-meta-item {
+  display: flex;
+  gap: 16px;
+}
+
+.detail-meta-label {
+  font-size: 0.85rem;
+  color: var(--text-cream-muted);
+  min-width: 80px;
+}
+
+.detail-meta-value {
+  font-size: 0.85rem;
+  color: var(--text-cream);
 }
 
 .detail-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--text-cream);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  padding: 12px 24px;
+  padding: 14px 28px;
   border: 1px solid var(--text-cream);
   border-radius: 4px;
   transition: all var(--transition-fast);
+  width: fit-content;
 }
 
 .detail-link:hover {
@@ -170,8 +240,8 @@ body {
 }
 
 .detail-link svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   transition: transform var(--transition-fast);
 }
 
@@ -179,19 +249,63 @@ body {
   transform: translateX(4px);
 }
 
-.close-hint {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.75rem;
-  color: var(--text-cream-muted);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* Detail Right - Image Gallery */
+.detail-right {
+  width: 50%;
+  height: 100%;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: #0a0a09;
 }
 
-.detail-panel.active .close-hint {
-  opacity: 1;
+.detail-right::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-image {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  display: block;
+}
+
+/* Scroll hint */
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-cream-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scroll-hint svg {
+  width: 20px;
+  height: 20px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(6px);
+  }
+  60% {
+    transform: translateY(3px);
+  }
 }
 
 /* Responsive adjustments */
@@ -216,9 +330,31 @@ body {
     font-size: clamp(2rem, 8vw, 3rem);
   }
 
-  .detail-panel.active {
-    max-height: 50vh;
-    padding: 24px 24px 40px;
+  .detail-view {
+    flex-direction: column;
+  }
+
+  .detail-left {
+    width: 100%;
+    height: 50%;
+    padding: 80px 24px 24px;
+  }
+
+  .detail-right {
+    width: 100%;
+    height: 50%;
+  }
+
+  .detail-title {
+    font-size: 2rem;
+  }
+
+  .detail-description {
+    font-size: 1rem;
+  }
+
+  .gallery-image {
+    height: 50vh;
   }
 }
 
@@ -242,6 +378,34 @@ body {
   animation-delay: 0.1s;
 }
 
-.section-left > *:nth-child(2) {
-  animation-delay: 0.2s;
+/* Detail view animations */
+.detail-left > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.detail-view.active .detail-left > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.detail-view.active .detail-back {
+  transition-delay: 0.1s;
+}
+
+.detail-view.active .detail-header {
+  transition-delay: 0.2s;
+}
+
+.detail-view.active .detail-description {
+  transition-delay: 0.3s;
+}
+
+.detail-view.active .detail-meta {
+  transition-delay: 0.4s;
+}
+
+.detail-view.active .detail-link {
+  transition-delay: 0.5s;
 }
