@@ -13,7 +13,7 @@
 <body>
   <div id="root"></div>
   <script>
-const { useState, useEffect, useRef, createElement: h, Fragment } = React;
+const { useState, useRef, createElement: h } = React;
 
 // Section data
 const sections = [
@@ -72,13 +72,6 @@ function ArrowIcon() {
   );
 }
 
-// Chevron down icon
-function ChevronDown() {
-  return h('svg', { className: "nav-hint-arrow", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-    h('polyline', { points: "6 9 12 15 18 9" })
-  );
-}
-
 // Section component
 function Section({ data, isExpanded, onToggle }) {
   return h('section', { className: "section", id: "section-" + data.id },
@@ -109,71 +102,17 @@ function Section({ data, isExpanded, onToggle }) {
   );
 }
 
-// Scroll indicator component
-function ScrollIndicator({ totalSections, activeSection, onDotClick }) {
-  const dots = [];
-  for (let i = 0; i < totalSections; i++) {
-    dots.push(
-      h('div', {
-        key: i,
-        className: "scroll-dot" + (activeSection === i ? " active" : ""),
-        onClick: function() { onDotClick(i); },
-        "aria-label": "Go to section " + (i + 1)
-      })
-    );
-  }
-  return h('div', { className: "scroll-indicator" }, dots);
-}
-
 // Main App component
 function App() {
   const expandedSectionState = useState(null);
   const expandedSection = expandedSectionState[0];
   const setExpandedSection = expandedSectionState[1];
 
-  const activeSectionState = useState(0);
-  const activeSection = activeSectionState[0];
-  const setActiveSection = activeSectionState[1];
-
   const containerRef = useRef(null);
-
-  useEffect(function() {
-    const container = containerRef.current;
-    if (!container) return;
-
-    function handleScroll() {
-      const scrollTop = container.scrollTop;
-      const sectionHeight = window.innerHeight;
-      const newActiveSection = Math.round(scrollTop / sectionHeight);
-
-      if (newActiveSection !== activeSection) {
-        setActiveSection(newActiveSection);
-        setExpandedSection(null);
-      }
-    }
-
-    container.addEventListener('scroll', handleScroll);
-    return function() {
-      container.removeEventListener('scroll', handleScroll);
-    };
-  }, [activeSection]);
-
-  function handleDotClick(index) {
-    const container = containerRef.current;
-    if (!container) return;
-
-    setExpandedSection(null);
-    container.scrollTo({
-      top: index * window.innerHeight,
-      behavior: 'smooth'
-    });
-  }
 
   function handleToggle(sectionId) {
     setExpandedSection(expandedSection === sectionId ? null : sectionId);
   }
-
-  const showScrollHint = activeSection === 0 && !expandedSection;
 
   const sectionElements = sections.map(function(section) {
     return h(Section, {
@@ -184,18 +123,7 @@ function App() {
     });
   });
 
-  return h(Fragment, null,
-    h('div', { className: "scroll-container", ref: containerRef }, sectionElements),
-    h(ScrollIndicator, {
-      totalSections: sections.length,
-      activeSection: activeSection,
-      onDotClick: handleDotClick
-    }),
-    showScrollHint ? h('div', { className: "nav-hint" },
-      h('span', null, "Scroll"),
-      h(ChevronDown)
-    ) : null
-  );
+  return h('div', { className: "scroll-container", ref: containerRef }, sectionElements);
 }
 
 // Render the app
