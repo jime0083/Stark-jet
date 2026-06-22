@@ -73,15 +73,13 @@ body {
   background: #151413;
 }
 
-/* Title container - perspective for 3D animation */
+/* Title container */
 .title-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   width: 100%;
   margin-bottom: 24px;
-  overflow: hidden;
-  perspective: 1000px;
 }
 
 .section-title {
@@ -91,18 +89,14 @@ body {
   line-height: 1.1;
   color: var(--text-cream);
   white-space: nowrap;
-  /* Initial state: rotated back from bottom, creating "lying flat" effect */
-  transform-origin: 0% 100%;
-  transform: rotateX(-90deg) translateY(10px);
-  opacity: 0;
-  transition: transform 0.6s cubic-bezier(.52, 0, 0, 1),
-              opacity 0.6s cubic-bezier(.52, 0, 0, 1);
+  /* Initial state: hidden with diagonal clip from bottom-left */
+  clip-path: polygon(0% 100%, 0% 100%, 0% 100%);
+  transition: clip-path 1s cubic-bezier(.52, 0, 0, 1);
 }
 
-/* Visible state: rotate up to normal position */
+/* Visible state: diagonal reveal flowing from bottom-left to top-right */
 .section.visible .section-title {
-  transform: rotateX(0deg) translateY(0);
-  opacity: 1;
+  clip-path: polygon(0% 100%, 0% 0%, 200% 0%);
 }
 
 /* Right column - 50% width */
