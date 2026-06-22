@@ -128,9 +128,10 @@ function Section(props) {
   var data = props.data;
   var onClick = props.onClick;
   var sectionRef = props.sectionRef;
+  var isVisible = props.isVisible;
 
   return h('section', {
-    className: "section",
+    className: "section" + (isVisible ? " visible" : ""),
     id: "section-" + data.id,
     onClick: onClick,
     ref: sectionRef
@@ -395,7 +396,8 @@ function App() {
       key: section.id,
       data: section,
       sectionRef: function(el) { sectionRefs.current[index] = el; },
-      onClick: function() { handleSectionClick(section, index); }
+      onClick: function() { handleSectionClick(section, index); },
+      isVisible: index === currentSection
     });
   });
 
