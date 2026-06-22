@@ -256,17 +256,18 @@ function App() {
   var scrollTimeoutRef = useRef(null);
 
   // Custom smooth scroll function with adjustable duration
-  // Using reference site's cubic-bezier(.52, 0, 0, 1) easing
+  // Matching reference site's cubic-bezier(.52, 0, 0, 1) easing
   function smoothScrollTo(container, targetScroll, duration) {
     var startScroll = container.scrollTop;
     var distance = targetScroll - startScroll;
     var startTime = null;
 
-    // Approximation of cubic-bezier(.52, 0, 0, 1)
-    // This creates a fast-start, ease-out effect
+    // Attempt to match cubic-bezier(.52, 0, 0, 1)
+    // This curve starts moderately fast, then decelerates strongly
     function customEase(t) {
-      // Fast acceleration at start, smooth deceleration at end
-      return 1 - Math.pow(1 - t, 3);
+      // Strong deceleration curve - matches reference site feel
+      // Starts with momentum, slows down gracefully at the end
+      return 1 - Math.pow(1 - t, 4);
     }
 
     function animation(currentTime) {
@@ -336,16 +337,16 @@ function App() {
         isScrollingRef.current = true;
         var targetScroll = targetSection * viewportHeight;
 
-        // Use reference site duration (600ms)
-        smoothScrollTo(container, targetScroll, 600);
+        // Slow transition (1200ms) for smooth, deliberate feel
+        smoothScrollTo(container, targetScroll, 1200);
 
         setCurrentSection(targetSection);
 
         // Reset scrolling flag after animation
         setTimeout(function() {
           isScrollingRef.current = false;
-        }, 700);
-      }, 100); // Wait 100ms after scroll stops
+        }, 1300);
+      }, 50); // Quick response (50ms) for immediate feel
     }
 
     container.addEventListener('scroll', handleScroll, { passive: true });
