@@ -225,18 +225,19 @@ a, button, .section, .expanding-frame {
 }
 
 /* Text floating up animation - matching reference site */
-.detail-left .detail-header,
+/* Note: detail-title uses ParticleText animation instead */
+.detail-left .detail-subtitle,
 .detail-left .detail-description,
 .detail-left .detail-meta,
 .detail-left .detail-link {
   opacity: 0;
   transform: translate3d(0, 30px, 0);
-  /* Closing: slide out upward */
+  /* Closing: slide out */
   transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1),
               transform 0.4s cubic-bezier(.52, 0, 0, 1);
 }
 
-.expanding-frame.expanded .detail-header {
+.expanding-frame.expanded .detail-subtitle {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.5s,
@@ -308,6 +309,18 @@ a, button, .section, .expanding-frame {
 
 .detail-header {
   margin-bottom: 40px;
+}
+
+/* Particle text container for detail title */
+.detail-title-container {
+  width: 100%;
+  height: 80px;
+  margin-bottom: 16px;
+}
+
+.detail-title-container .particle-canvas {
+  width: 100%;
+  height: 100%;
 }
 
 .detail-title {

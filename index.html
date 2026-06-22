@@ -341,7 +341,9 @@ function DetailView(props) {
       h('div', { className: "detail-content-wrapper" },
         h('div', { className: "detail-left" },
           h('div', { className: "detail-header" },
-            h('h1', { className: "detail-title" }, data.title),
+            h('div', { className: "detail-title-container" },
+              h(ParticleText, { text: data.title, isVisible: isExpanded })
+            ),
             h('p', { className: "detail-subtitle" }, data.subtitle)
           ),
           h('p', { className: "detail-description" }, data.description),
