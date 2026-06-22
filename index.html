@@ -130,118 +130,113 @@ function ParticleText(props) {
   var canvasRef = useRef(null);
   var particlesRef = useRef([]);
   var animationRef = useRef(null);
-  var lastTextRef = useRef('');
-  var isInitializedRef = useRef(false);
+  var initializedRef = useRef(false);
 
   useEffect(function() {
     var canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Wait a frame for layout to settle
-    var initTimeout = setTimeout(function() {
-      var ctx = canvas.getContext('2d');
-      var width = canvas.offsetWidth;
-      var height = canvas.offsetHeight;
+    var ctx = canvas.getContext('2d');
+    var width = canvas.offsetWidth;
+    var height = canvas.offsetHeight;
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    ctx.scale(2, 2);
 
-      if (width === 0 || height === 0) return;
+    // Create particles from text
+    function createParticles() {
+      var fontSize = Math.min(width * 0.18, 90);
+      ctx.fillStyle = '#f0ece4';
+      ctx.font = '700 ' + fontSize + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
+      ctx.letterSpacing = '-0.012em';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
 
-      canvas.width = width * 2;
-      canvas.height = height * 2;
-      ctx.scale(2, 2);
+      // Clear and draw text to sample pixels
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillText(text, 20, height / 2);
 
-      // Create particles from text
-      function createParticles() {
-        var fontSize = Math.min(width * 0.18, 90);
-        ctx.fillStyle = '#f0ece4';
-        ctx.font = '700 ' + fontSize + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
-        ctx.letterSpacing = '-0.012em';
-        ctx.textBaseline = 'middle';
-        ctx.textAlign = 'left';
+      var imageData = ctx.getImageData(0, 0, width * 2, height * 2);
+      var pixels = imageData.data;
+      var particles = [];
+      var gap = 2; // Denser sampling for more solid text appearance
 
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillText(text, 20, height / 2);
+      for (var y = 0; y < height * 2; y += gap) {
+        for (var x = 0; x < width * 2; x += gap) {
+          var i = (y * width * 2 + x) * 4;
+          if (pixels[i + 3] > 128) { // If pixel is visible
+            particles.push({
+              x: x / 2,
+              y: y / 2,
+              targetX: x / 2,
+              targetY: y / 2,
+              originX: Math.random() * width - width / 2,
+              originY: Math.random() * height + height,
+              z: Math.random() * 100 - 50,
+              size: 1.2, // Consistent size for cleaner text
+              speed: Math.random() * 0.03 + 0.03
+            });
+          }
+        }
+      }
+      return particles;
+    }
 
-        var imageData = ctx.getImageData(0, 0, width * 2, height * 2);
-        var pixels = imageData.data;
-        var particles = [];
-        var gap = 2;
+    if (!initializedRef.current) {
+      particlesRef.current = createParticles();
+      initializedRef.current = true;
+    }
 
-        for (var y = 0; y < height * 2; y += gap) {
-          for (var x = 0; x < width * 2; x += gap) {
-            var i = (y * width * 2 + x) * 4;
-            if (pixels[i + 3] > 128) {
-              particles.push({
-                x: Math.random() * width - width / 2,
-                y: Math.random() * height + height,
-                targetX: x / 2,
-                targetY: y / 2,
-                originX: Math.random() * width - width / 2,
-                originY: Math.random() * height + height,
-                z: Math.random() * 100 - 50,
-                size: 1.2,
-                speed: Math.random() * 0.03 + 0.03
-              });
+    // Animation loop
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#f0ece4';
+
+      var particles = particlesRef.current;
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+
+        if (isVisible) {
+          // Move towards target
+          p.x += (p.targetX - p.x) * p.speed;
+          p.y += (p.targetY - p.y) * p.speed;
+          p.z += (0 - p.z) * p.speed;
+        } else {
+          // Move towards scattered position
+          p.x += (p.originX - p.x) * 0.05;
+          p.y += (p.originY - p.y) * 0.05;
+        }
+
+        // Draw particle as small rectangle for cleaner text appearance
+        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+
+        // Draw connecting lines for geometric effect (only when transitioning)
+        var dx = Math.abs(p.x - p.targetX);
+        var dy = Math.abs(p.y - p.targetY);
+        if (dx > 5 || dy > 5) {
+          if (i < particles.length - 1 && i % 3 === 0) {
+            var nextP = particles[i + 1];
+            var lineDx = nextP.x - p.x;
+            var lineDy = nextP.y - p.y;
+            var dist = Math.sqrt(lineDx * lineDx + lineDy * lineDy);
+            if (dist < 20) {
+              ctx.strokeStyle = 'rgba(240, 236, 228, 0.15)';
+              ctx.lineWidth = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(nextP.x, nextP.y);
+              ctx.stroke();
             }
           }
         }
-        return particles;
       }
 
-      // Reinitialize if text changed or not initialized
-      if (!isInitializedRef.current || lastTextRef.current !== text) {
-        particlesRef.current = createParticles();
-        lastTextRef.current = text;
-        isInitializedRef.current = true;
-      }
+      animationRef.current = requestAnimationFrame(animate);
+    }
 
-      // Animation loop
-      function animate() {
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#f0ece4';
-
-        var particles = particlesRef.current;
-        for (var i = 0; i < particles.length; i++) {
-          var p = particles[i];
-
-          if (isVisible) {
-            p.x += (p.targetX - p.x) * p.speed;
-            p.y += (p.targetY - p.y) * p.speed;
-            p.z += (0 - p.z) * p.speed;
-          } else {
-            p.x += (p.originX - p.x) * 0.05;
-            p.y += (p.originY - p.y) * 0.05;
-          }
-
-          ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
-
-          var dx = Math.abs(p.x - p.targetX);
-          var dy = Math.abs(p.y - p.targetY);
-          if (dx > 5 || dy > 5) {
-            if (i < particles.length - 1 && i % 3 === 0) {
-              var nextP = particles[i + 1];
-              var lineDx = nextP.x - p.x;
-              var lineDy = nextP.y - p.y;
-              var dist = Math.sqrt(lineDx * lineDx + lineDy * lineDy);
-              if (dist < 20) {
-                ctx.strokeStyle = 'rgba(240, 236, 228, 0.15)';
-                ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(nextP.x, nextP.y);
-                ctx.stroke();
-              }
-            }
-          }
-        }
-
-        animationRef.current = requestAnimationFrame(animate);
-      }
-
-      animate();
-    }, 50);
+    animate();
 
     return function() {
-      clearTimeout(initTimeout);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
@@ -462,14 +457,10 @@ function App() {
       setTimeout(function() {
         currentSectionRef.current = targetIndex;
         setCurrentSection(targetIndex);
+        setTransitionDirection(null);
         setNextSection(null);
-
-        // Small delay before showing particle animation
-        setTimeout(function() {
-          setTransitionDirection(null);
-          isScrollingRef.current = false;
-          wheelAccumulator = 0;
-        }, 100);
+        isScrollingRef.current = false;
+        wheelAccumulator = 0;
       }, 1200);
     }
 
