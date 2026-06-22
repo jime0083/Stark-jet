@@ -423,68 +423,45 @@ function App() {
   var currentSection = currentSectionState[0];
   var setCurrentSection = currentSectionState[1];
 
+  // Track transition state: null, 'up', or 'down'
+  var transitionState = useState(null);
+  var transitionDirection = transitionState[0];
+  var setTransitionDirection = transitionState[1];
+
+  // Next section to transition to
+  var nextSectionState = useState(null);
+  var nextSection = nextSectionState[0];
+  var setNextSection = nextSectionState[1];
+
   var containerRef = useRef(null);
   var sectionRefs = useRef([]);
   var isScrollingRef = useRef(false);
-  var scrollTimeoutRef = useRef(null);
-  var lastScrollTopRef = useRef(0);
   var currentSectionRef = useRef(0);
 
-  // Custom smooth scroll function with adjustable duration
-  // Matching reference site's cubic-bezier(.52, 0, 0, 1) easing
-  function smoothScrollTo(container, targetScroll, duration) {
-    var startScroll = container.scrollTop;
-    var distance = targetScroll - startScroll;
-    var startTime = null;
-
-    // Attempt to match cubic-bezier(.52, 0, 0, 1)
-    // This curve starts moderately fast, then decelerates strongly
-    function customEase(t) {
-      // Strong deceleration curve - matches reference site feel
-      // Starts with momentum, slows down gracefully at the end
-      return 1 - Math.pow(1 - t, 4);
-    }
-
-    function animation(currentTime) {
-      if (startTime === null) startTime = currentTime;
-      var elapsed = currentTime - startTime;
-      var progress = Math.min(elapsed / duration, 1);
-      var easeProgress = customEase(progress);
-
-      container.scrollTop = startScroll + (distance * easeProgress);
-
-      if (progress < 1) {
-        requestAnimationFrame(animation);
-      }
-    }
-
-    requestAnimationFrame(animation);
-  }
-
-  // Custom scroll handling with loop and slow transition
+  // Handle wheel events for section navigation
   useEffect(function() {
     var container = containerRef.current;
     if (!container) return;
 
-    var viewportHeight = window.innerHeight;
     var wheelAccumulator = 0;
-    var wheelThreshold = 100; // Accumulated wheel delta to trigger section change
+    var wheelThreshold = 100;
 
-    function navigateToSection(targetSection) {
+    function navigateToSection(targetIndex, direction) {
       if (isScrollingRef.current) return;
 
       isScrollingRef.current = true;
-      var targetScroll = targetSection * viewportHeight;
+      setNextSection(targetIndex);
+      setTransitionDirection(direction);
 
-      smoothScrollTo(container, targetScroll, 1200);
-
-      currentSectionRef.current = targetSection;
-      setCurrentSection(targetSection);
-
+      // After animation, update current section
       setTimeout(function() {
+        currentSectionRef.current = targetIndex;
+        setCurrentSection(targetIndex);
+        setTransitionDirection(null);
+        setNextSection(null);
         isScrollingRef.current = false;
         wheelAccumulator = 0;
-      }, 1300);
+      }, 1200);
     }
 
     function handleWheel(e) {
@@ -494,24 +471,22 @@ function App() {
 
       wheelAccumulator += e.deltaY;
 
-      var targetSection = currentSectionRef.current;
-
       if (wheelAccumulator > wheelThreshold) {
-        // Scrolling down
-        targetSection = currentSectionRef.current + 1;
-        if (targetSection >= sections.length) {
-          targetSection = 0; // Loop to first
+        // Scrolling down - go to next section
+        var target = currentSectionRef.current + 1;
+        if (target >= sections.length) {
+          target = 0; // Loop to first
         }
         wheelAccumulator = 0;
-        navigateToSection(targetSection);
+        navigateToSection(target, 'down');
       } else if (wheelAccumulator < -wheelThreshold) {
-        // Scrolling up
-        targetSection = currentSectionRef.current - 1;
-        if (targetSection < 0) {
-          targetSection = sections.length - 1; // Loop to last
+        // Scrolling up - go to previous section
+        var target = currentSectionRef.current - 1;
+        if (target < 0) {
+          target = sections.length - 1; // Loop to last
         }
         wheelAccumulator = 0;
-        navigateToSection(targetSection);
+        navigateToSection(target, 'up');
       }
     }
 
@@ -519,9 +494,6 @@ function App() {
 
     return function() {
       container.removeEventListener('wheel', handleWheel);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
     };
   }, []);
 
@@ -532,7 +504,6 @@ function App() {
       setInitialRect(rect);
       setSelectedSection(sectionData);
 
-      // Trigger expansion after a small delay for the initial position to be set
       setTimeout(function() {
         setIsExpanded(true);
       }, 50);
@@ -541,34 +512,75 @@ function App() {
 
   function handleClose() {
     setIsExpanded(false);
-    // Wait for collapse animation (0.6s), then hide
     setTimeout(function() {
       setSelectedSection(null);
       setInitialRect(null);
     }, 600);
   }
 
-  var sectionElements = sections.map(function(section, index) {
-    // ParticleText is visible only when:
-    // 1. This is the current section AND
-    // 2. No detail view is open (selectedSection is null)
-    var isParticleVisible = index === currentSection && selectedSection === null;
+  // Render current and next sections for transition
+  var currentSectionData = sections[currentSection];
+  var nextSectionData = nextSection !== null ? sections[nextSection] : null;
 
-    return h(Section, {
-      key: section.id,
-      data: section,
-      sectionRef: function(el) { sectionRefs.current[index] = el; },
-      onClick: function() { handleSectionClick(section, index); },
-      isVisible: isParticleVisible
-    });
-  });
+  var isParticleVisible = selectedSection === null && transitionDirection === null;
+
+  // Current section element
+  var currentSectionEl = h('div', {
+    key: 'current-' + currentSection,
+    className: 'section-wrapper' + (transitionDirection ? ' transitioning-' + transitionDirection : ''),
+    ref: function(el) { sectionRefs.current[currentSection] = el; }
+  },
+    h('section', {
+      className: 'section',
+      onClick: function() { handleSectionClick(currentSectionData, currentSection); }
+    },
+      h('div', { className: 'section-left' },
+        h('div', { className: 'title-row' },
+          h(ParticleText, { text: currentSectionData.title, isVisible: isParticleVisible })
+        )
+      ),
+      h('div', { className: 'section-right' },
+        h('img', {
+          src: currentSectionData.image,
+          alt: currentSectionData.title,
+          className: 'section-image'
+        })
+      )
+    )
+  );
+
+  // Next section element (only during transition)
+  var nextSectionEl = nextSectionData ? h('div', {
+    key: 'next-' + nextSection,
+    className: 'section-wrapper next-section ' + (transitionDirection === 'down' ? 'from-bottom' : 'from-top')
+  },
+    h('section', {
+      className: 'section'
+    },
+      h('div', { className: 'section-left' },
+        h('div', { className: 'title-row' },
+          h(ParticleText, { text: nextSectionData.title, isVisible: false })
+        )
+      ),
+      h('div', { className: 'section-right' },
+        h('img', {
+          src: nextSectionData.image,
+          alt: nextSectionData.title,
+          className: 'section-image'
+        })
+      )
+    )
+  ) : null;
 
   return h(Fragment, null,
     h(CustomCursor, { isDetailView: selectedSection !== null }),
     h('div', {
-      className: "scroll-container" + (selectedSection ? " hidden" : ""),
+      className: 'scroll-container' + (selectedSection ? ' hidden' : ''),
       ref: containerRef
-    }, sectionElements),
+    },
+      currentSectionEl,
+      nextSectionEl
+    ),
     h(DetailView, {
       data: selectedSection,
       isActive: selectedSection !== null,

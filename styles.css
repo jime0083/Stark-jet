@@ -94,13 +94,46 @@ a, button, .section, .expanding-frame {
 /* Main scroll container */
 .scroll-container {
   height: 100vh;
-  overflow-y: scroll;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow: hidden;
+  position: relative;
 }
 
-.scroll-container::-webkit-scrollbar {
-  display: none;
+/* Section wrapper for slide transitions */
+.section-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 1.2s cubic-bezier(.52, 0, 0, 1);
+}
+
+/* Current section sliding out */
+.section-wrapper.transitioning-down {
+  transform: translateY(-100%);
+}
+
+.section-wrapper.transitioning-up {
+  transform: translateY(100%);
+}
+
+/* Next section positioning and animation */
+.section-wrapper.next-section {
+  transition: transform 1.2s cubic-bezier(.52, 0, 0, 1);
+}
+
+.section-wrapper.next-section.from-bottom {
+  transform: translateY(100%);
+}
+
+.section-wrapper.next-section.from-top {
+  transform: translateY(-100%);
+}
+
+/* Animate next section into view */
+.section-wrapper.transitioning-down + .section-wrapper.next-section.from-bottom,
+.section-wrapper.transitioning-up + .section-wrapper.next-section.from-top {
+  transform: translateY(0);
 }
 
 .scroll-container.hidden {
