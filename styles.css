@@ -44,13 +44,14 @@ body {
 .cursor-label-container {
   position: relative;
   padding: 12px 0 0 12px;
-  height: 1.2em;
+  height: 14px;
+  width: 50px;
   overflow: hidden;
 }
 
 .cursor-label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.525rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -63,6 +64,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
+  line-height: 14px;
   transition: transform 0.4s cubic-bezier(.52, 0, 0, 1);
 }
 
