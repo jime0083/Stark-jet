@@ -451,7 +451,11 @@ function App() {
 
       isScrollingRef.current = true;
       setNextSection(targetIndex);
-      setTransitionDirection(direction);
+
+      // Small delay to allow next section to be positioned before animating
+      setTimeout(function() {
+        setTransitionDirection(direction);
+      }, 50);
 
       // After animation, update current section
       setTimeout(function() {
@@ -461,7 +465,7 @@ function App() {
         setNextSection(null);
         isScrollingRef.current = false;
         wheelAccumulator = 0;
-      }, 1200);
+      }, 1300);
     }
 
     function handleWheel(e) {
@@ -550,9 +554,19 @@ function App() {
   );
 
   // Next section element (only during transition)
+  var nextSectionClass = 'section-wrapper next-section';
+  if (transitionDirection === 'down') {
+    nextSectionClass += ' from-bottom animating';
+  } else if (transitionDirection === 'up') {
+    nextSectionClass += ' from-top animating';
+  } else if (nextSection !== null) {
+    // Initial positioning without animation
+    nextSectionClass += ' from-bottom';
+  }
+
   var nextSectionEl = nextSectionData ? h('div', {
     key: 'next-' + nextSection,
-    className: 'section-wrapper next-section ' + (transitionDirection === 'down' ? 'from-bottom' : 'from-top')
+    className: nextSectionClass
   },
     h('section', {
       className: 'section'

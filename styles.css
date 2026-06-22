@@ -117,9 +117,9 @@ a, button, .section, .expanding-frame {
   transform: translateY(100%);
 }
 
-/* Next section positioning and animation */
+/* Next section - initial position (no transition for initial placement) */
 .section-wrapper.next-section {
-  transition: transform 1.2s cubic-bezier(.52, 0, 0, 1);
+  transition: none;
 }
 
 .section-wrapper.next-section.from-bottom {
@@ -130,9 +130,9 @@ a, button, .section, .expanding-frame {
   transform: translateY(-100%);
 }
 
-/* Animate next section into view */
-.section-wrapper.transitioning-down + .section-wrapper.next-section.from-bottom,
-.section-wrapper.transitioning-up + .section-wrapper.next-section.from-top {
+/* Next section animating into view */
+.section-wrapper.next-section.animating {
+  transition: transform 1.2s cubic-bezier(.52, 0, 0, 1);
   transform: translateY(0);
 }
 
