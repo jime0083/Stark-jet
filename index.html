@@ -392,8 +392,16 @@ function CustomCursor(props) {
     };
   }, []);
 
+  // Open: visible when not in detail view, slides up to hide
+  // Close: hidden below, slides up to show when in detail view
+  var openClass = 'cursor-label open' + (isDetailView ? ' hidden' : '');
+  var closeClass = 'cursor-label close' + (isDetailView ? ' visible' : '');
+
   return h('div', { className: 'custom-cursor', ref: cursorRef },
-    h('span', { className: 'cursor-label' }, isDetailView ? 'Close' : 'Open')
+    h('div', { className: 'cursor-label-container' },
+      h('span', { className: openClass }, 'Open'),
+      h('span', { className: closeClass }, 'Close')
+    )
   );
 }
 
