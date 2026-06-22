@@ -27,13 +27,10 @@ var sections = [
     title: "Stark Jet",
     image: "images/コーヒーとコーヒー豆1.png",
     subtitle: "Welcome to Stark Jet",
-    description: "深煎りの豆と心地よい空間で、最高の一杯をお届けします。2015年の創業以来、こだわり抜いたコーヒーと温かいおもてなしで、多くのお客様にご愛顧いただいております。私たちは、コーヒーを通じて日常に小さな幸せをお届けすることを使命としています。",
-    meta: [
-      { label: "設立", value: "2015年" },
-      { label: "所在地", value: "東京都渋谷区" }
-    ],
-    link: "#about",
-    linkText: "詳しく見る",
+    description: "スペシャルティコーヒー専門店として、\nシンプル、スタンダードでありながらも\n新しい、本物の良さを追求しています",
+    meta: [],
+    link: null,
+    linkText: null,
     gallery: [
       "images/コーヒーとコーヒー豆1.png",
       "images/コーヒーとコーヒー豆2.png",
@@ -45,7 +42,7 @@ var sections = [
     title: "Philosophy",
     image: "images/コーヒー豆1.png",
     subtitle: "Our Philosophy",
-    description: "一杯のコーヒーに込める想い。厳選された産地から直接仕入れた豆を、熟練のロースターが丁寧に焙煎。豆本来の風味を最大限に引き出すことに全力を注いでいます。私たちは、品質に一切の妥協を許しません。",
+    description: "一粒の種から生まれた、個性溢れるコーヒー豆。\n生産地から様々な通過点を経由し、カップに注がれるその瞬間まで、一粒のコーヒーの旅は続きます\nその素材本来の魅力を引き出すため、PASSAGE COFFEEのバリスタは、コーヒー豆を「コーヒー」に変える最後までこだわります。\n一粒の旅した道が、人々の日常に続き、コーヒーをもっと身近に感じてもらえるように。",
     meta: [
       { label: "焙煎", value: "自家焙煎" },
       { label: "産地", value: "エチオピア、コロンビア、ケニア" }
@@ -60,16 +57,15 @@ var sections = [
   },
   {
     id: 3,
-    title: "Location",
+    title: "Roasting",
     image: "images/ロケーション1.png",
-    subtitle: "Our Space",
-    description: "落ち着いた雰囲気の店内で、ゆったりとした時間をお過ごしください。木のぬくもりを感じる内装と、自然光が差し込む大きな窓が特徴です。Wi-Fi完備、電源席もご用意しております。仕事にも、読書にも、会話にも最適な空間です。",
+    subtitle: "Our Roasting",
+    description: "ドイツ製PROBAT社のUG22とオランダ製GIESEN社のW6Aの2台の焙煎機を導入し、スペシャルティコーヒーに詰まった「素材由来の果実味」を最大限に引き出し仕上げています。\nデータ化された焙煎プロファイルを基に、ロースティングチームでのテイスティング、ディスカッションを重ね日々焙煎の研究を行なっています。",
     meta: [
-      { label: "席数", value: "32席" },
-      { label: "設備", value: "Wi-Fi、電源完備" }
+      { label: "焙煎機", value: "PROBAT UG22 / GIESEN W6A" }
     ],
-    link: "#location",
-    linkText: "アクセス",
+    link: "#roasting",
+    linkText: "詳しく見る",
     gallery: [
       "images/ロケーション1.png",
       "images/ロケーション2.png",
@@ -357,6 +353,19 @@ function DetailView(props) {
     onClose();
   }
 
+  // Only render meta section if there are meta items
+  var metaSection = data.meta && data.meta.length > 0
+    ? h('div', { className: "detail-meta" }, metaItems)
+    : null;
+
+  // Only render link if link exists
+  var linkSection = data.link && data.linkText
+    ? h('a', { href: data.link, className: "detail-link" },
+        data.linkText,
+        h(ArrowIcon)
+      )
+    : null;
+
   return h('div', { className: "detail-overlay" + (isActive ? " active" : "") },
     h('div', {
       className: "expanding-frame" + (isExpanded ? " expanded" : ""),
@@ -370,11 +379,8 @@ function DetailView(props) {
             h('p', { className: "detail-subtitle" }, data.subtitle)
           ),
           h('p', { className: "detail-description" }, data.description),
-          h('div', { className: "detail-meta" }, metaItems),
-          h('a', { href: data.link, className: "detail-link" },
-            data.linkText,
-            h(ArrowIcon)
-          )
+          metaSection,
+          linkSection
         ),
         h('div', { className: "detail-right" },
           h('div', { className: "gallery" }, galleryImages)
