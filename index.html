@@ -188,13 +188,15 @@ function ParticleText(props) {
         for (var x = 0; x < width * 2; x += gap) {
           var i = (y * width * 2 + x) * 4;
           if (pixels[i + 3] > 128) { // If pixel is visible
+            var originX = Math.random() * width - width / 2;
+            var originY = Math.random() * height + height;
             particles.push({
-              x: x / 2,
-              y: y / 2,
+              x: originX,  // Start from scattered position
+              y: originY,
               targetX: x / 2,
               targetY: y / 2,
-              originX: Math.random() * width - width / 2,
-              originY: Math.random() * height + height,
+              originX: originX,
+              originY: originY,
               z: Math.random() * 100 - 50,
               size: 1.2, // Consistent size for cleaner text
               speed: Math.random() * 0.03 + 0.03
@@ -475,6 +477,16 @@ function App() {
   var isParticleReady = particleReadyState[0];
   var setIsParticleReady = particleReadyState[1];
 
+  // Track particle animation key for forcing re-mount on section change
+  var particleKeyState = useState(0);
+  var particleKey = particleKeyState[0];
+  var setParticleKey = particleKeyState[1];
+
+  // Track if particle animation should be delayed after section change
+  var particleDelayState = useState(false);
+  var isParticleDelayed = particleDelayState[0];
+  var setIsParticleDelayed = particleDelayState[1];
+
   var containerRef = useRef(null);
   var sectionRefs = useRef([]);
   var isScrollingRef = useRef(false);
@@ -568,8 +580,17 @@ function App() {
         setTransitionDirection(null);
         setNextSection(null);
         setIsAnimating(false);
-        isScrollingRef.current = false;
-        wheelAccumulator = 0;
+
+        // Reset particle animation - increment key and delay visibility
+        setIsParticleDelayed(true);
+        setParticleKey(function(prev) { return prev + 1; });
+
+        // After a short delay, start particle animation
+        setTimeout(function() {
+          setIsParticleDelayed(false);
+          isScrollingRef.current = false;
+          wheelAccumulator = 0;
+        }, 100);
       }, 1300);
     }
 
@@ -631,7 +652,7 @@ function App() {
   var currentSectionData = sections[currentSection];
   var nextSectionData = nextSection !== null ? sections[nextSection] : null;
 
-  var isParticleVisible = isParticleReady && selectedSection === null && transitionDirection === null;
+  var isParticleVisible = isParticleReady && selectedSection === null && transitionDirection === null && !isParticleDelayed;
 
   // Current section element
   var currentSectionClass = 'section-wrapper';
@@ -650,7 +671,7 @@ function App() {
     },
       h('div', { className: 'section-left' },
         h('div', { className: 'title-row' },
-          h(ParticleText, { text: currentSectionData.title, isVisible: isParticleVisible })
+          h(ParticleText, { key: 'particle-' + currentSection + '-' + particleKey, text: currentSectionData.title, isVisible: isParticleVisible })
         )
       ),
       h('div', { className: 'section-right' },

@@ -12,7 +12,8 @@
       "WebFetch(domain:goworkship.com)",
       "WebFetch(domain:codepen.io)",
       "WebSearch",
-      "WebFetch(domain:gist.github.com)"
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:jime0083.github.io)"
     ]
   }
 }
