@@ -123,6 +123,132 @@ function ArrowIcon() {
   );
 }
 
+// Particle Text Animation Component
+function ParticleText(props) {
+  var text = props.text;
+  var isVisible = props.isVisible;
+  var canvasRef = useRef(null);
+  var particlesRef = useRef([]);
+  var animationRef = useRef(null);
+  var initializedRef = useRef(false);
+
+  useEffect(function() {
+    var canvas = canvasRef.current;
+    if (!canvas) return;
+
+    var ctx = canvas.getContext('2d');
+    var width = canvas.offsetWidth;
+    var height = canvas.offsetHeight;
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    ctx.scale(2, 2);
+
+    // Create particles from text
+    function createParticles() {
+      var fontSize = Math.min(width * 0.15, 80);
+      ctx.fillStyle = '#f0ece4';
+      ctx.font = 'bold ' + fontSize + 'px Helvetica Neue, Arial, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+
+      // Clear and draw text to sample pixels
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillText(text, 20, height / 2);
+
+      var imageData = ctx.getImageData(0, 0, width * 2, height * 2);
+      var pixels = imageData.data;
+      var particles = [];
+      var gap = 4; // Sample every 4 pixels
+
+      for (var y = 0; y < height * 2; y += gap) {
+        for (var x = 0; x < width * 2; x += gap) {
+          var i = (y * width * 2 + x) * 4;
+          if (pixels[i + 3] > 128) { // If pixel is visible
+            particles.push({
+              x: x / 2,
+              y: y / 2,
+              targetX: x / 2,
+              targetY: y / 2,
+              originX: Math.random() * width - width / 2,
+              originY: Math.random() * height + height,
+              z: Math.random() * 100 - 50,
+              size: Math.random() * 2 + 1,
+              speed: Math.random() * 0.02 + 0.02
+            });
+          }
+        }
+      }
+      return particles;
+    }
+
+    if (!initializedRef.current) {
+      particlesRef.current = createParticles();
+      initializedRef.current = true;
+    }
+
+    // Animation loop
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#f0ece4';
+
+      var particles = particlesRef.current;
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+
+        if (isVisible) {
+          // Move towards target
+          p.x += (p.targetX - p.x) * p.speed;
+          p.y += (p.targetY - p.y) * p.speed;
+          p.z += (0 - p.z) * p.speed;
+        } else {
+          // Move towards scattered position
+          p.x += (p.originX - p.x) * 0.05;
+          p.y += (p.originY - p.y) * 0.05;
+        }
+
+        // 3D perspective
+        var scale = 1 + p.z / 500;
+        var size = p.size * scale;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw connecting lines to nearby particles
+        if (isVisible && i < particles.length - 1) {
+          var nextP = particles[i + 1];
+          var dx = nextP.x - p.x;
+          var dy = nextP.y - p.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 15) {
+            ctx.strokeStyle = 'rgba(240, 236, 228, 0.1)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(nextP.x, nextP.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      animationRef.current = requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    return function() {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [text, isVisible]);
+
+  return h('canvas', {
+    ref: canvasRef,
+    className: 'particle-canvas'
+  });
+}
+
 // Section component for main view
 function Section(props) {
   var data = props.data;
@@ -138,7 +264,7 @@ function Section(props) {
   },
     h('div', { className: "section-left" },
       h('div', { className: "title-row" },
-        h('h2', { className: "section-title" }, data.title)
+        h(ParticleText, { text: data.title, isVisible: isVisible })
       )
     ),
     h('div', { className: "section-right" },
