@@ -123,6 +123,29 @@ function ArrowIcon() {
   );
 }
 
+// Loading Screen Component
+function LoadingScreen(props) {
+  var isVisible = props.isVisible;
+  var progress = props.progress;
+
+  return h('div', { className: 'loading-screen' + (isVisible ? '' : ' hidden') },
+    h('div', { className: 'loading-content' },
+      h('img', {
+        src: 'images/ロゴ.png',
+        alt: 'Stark Jet',
+        className: 'loading-logo'
+      }),
+      h('div', { className: 'loading-progress-bar' },
+        h('div', {
+          className: 'loading-progress-fill',
+          style: { width: progress + '%' }
+        })
+      ),
+      h('span', { className: 'loading-text' }, 'Loading...')
+    )
+  );
+}
+
 // Particle Text Animation Component
 function ParticleText(props) {
   var text = props.text;
@@ -438,10 +461,81 @@ function App() {
   var isAnimating = animatingState[0];
   var setIsAnimating = animatingState[1];
 
+  // Loading state
+  var loadingState = useState(true);
+  var isLoading = loadingState[0];
+  var setIsLoading = loadingState[1];
+
+  var loadingProgressState = useState(0);
+  var loadingProgress = loadingProgressState[0];
+  var setLoadingProgress = loadingProgressState[1];
+
+  // Track if particle animation should start (after loading)
+  var particleReadyState = useState(false);
+  var isParticleReady = particleReadyState[0];
+  var setIsParticleReady = particleReadyState[1];
+
   var containerRef = useRef(null);
   var sectionRefs = useRef([]);
   var isScrollingRef = useRef(false);
   var currentSectionRef = useRef(0);
+
+  // Loading effect - preload images and prepare particles
+  useEffect(function() {
+    var imagesToLoad = [];
+    sections.forEach(function(section) {
+      imagesToLoad.push(section.image);
+      if (section.gallery) {
+        section.gallery.forEach(function(img) {
+          if (imagesToLoad.indexOf(img) === -1) {
+            imagesToLoad.push(img);
+          }
+        });
+      }
+    });
+    // Add logo
+    imagesToLoad.push('images/ロゴ.png');
+
+    var loadedCount = 0;
+    var totalImages = imagesToLoad.length;
+
+    function checkAllLoaded() {
+      loadedCount++;
+      var progress = Math.round((loadedCount / totalImages) * 100);
+      setLoadingProgress(progress);
+
+      if (loadedCount >= totalImages) {
+        // All images loaded, wait a bit then hide loading screen
+        setTimeout(function() {
+          setIsLoading(false);
+          // Start particle animation after loading screen fades out
+          setTimeout(function() {
+            setIsParticleReady(true);
+          }, 500);
+        }, 500);
+      }
+    }
+
+    imagesToLoad.forEach(function(src) {
+      var img = new Image();
+      img.onload = checkAllLoaded;
+      img.onerror = checkAllLoaded; // Count even if error
+      img.src = src;
+    });
+
+    // Fallback timeout in case images take too long
+    setTimeout(function() {
+      if (isLoading) {
+        setLoadingProgress(100);
+        setTimeout(function() {
+          setIsLoading(false);
+          setTimeout(function() {
+            setIsParticleReady(true);
+          }, 500);
+        }, 300);
+      }
+    }, 5000);
+  }, []);
 
   // Handle wheel events for section navigation
   useEffect(function() {
@@ -537,7 +631,7 @@ function App() {
   var currentSectionData = sections[currentSection];
   var nextSectionData = nextSection !== null ? sections[nextSection] : null;
 
-  var isParticleVisible = selectedSection === null && transitionDirection === null;
+  var isParticleVisible = isParticleReady && selectedSection === null && transitionDirection === null;
 
   // Current section element
   var currentSectionClass = 'section-wrapper';
@@ -603,6 +697,7 @@ function App() {
   ) : null;
 
   return h(Fragment, null,
+    h(LoadingScreen, { isVisible: isLoading, progress: loadingProgress }),
     h(CustomCursor, { isDetailView: selectedSection !== null }),
     h('div', {
       className: 'scroll-container' + (selectedSection ? ' hidden' : ''),
