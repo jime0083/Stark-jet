@@ -467,73 +467,58 @@ function App() {
     if (!container) return;
 
     var viewportHeight = window.innerHeight;
-    var thresholdRatio = 0.30; // 30% of viewport height
+    var wheelAccumulator = 0;
+    var wheelThreshold = 100; // Accumulated wheel delta to trigger section change
 
-    function handleScroll() {
+    function navigateToSection(targetSection) {
       if (isScrollingRef.current) return;
 
-      // Clear any pending timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
+      isScrollingRef.current = true;
+      var targetScroll = targetSection * viewportHeight;
 
-      // Set timeout to check scroll position after user stops scrolling
-      scrollTimeoutRef.current = setTimeout(function() {
-        var newScrollTop = container.scrollTop;
-        var currentSectionStart = currentSectionRef.current * viewportHeight;
-        var offsetFromSection = newScrollTop - currentSectionStart;
-        var offsetRatio = offsetFromSection / viewportHeight;
+      smoothScrollTo(container, targetScroll, 1200);
 
-        var targetSection;
+      currentSectionRef.current = targetSection;
+      setCurrentSection(targetSection);
 
-        if (offsetRatio >= thresholdRatio) {
-          // Scrolled down 30% or more - go to next section
-          targetSection = currentSectionRef.current + 1;
-        } else if (offsetRatio <= -thresholdRatio) {
-          // Scrolled up 30% or more - go to previous section
-          targetSection = currentSectionRef.current - 1;
-        } else {
-          // Less than 30% - snap back to current section
-          if (Math.abs(offsetFromSection) > 1) {
-            isScrollingRef.current = true;
-            smoothScrollTo(container, currentSectionStart, 1200);
-            setTimeout(function() {
-              isScrollingRef.current = false;
-            }, 1300);
-          }
-          return;
-        }
-
-        // Loop handling
-        if (targetSection >= sections.length) {
-          // At last section, loop to first
-          targetSection = 0;
-        } else if (targetSection < 0) {
-          // At first section scrolling up, loop to last
-          targetSection = sections.length - 1;
-        }
-
-        // Smooth scroll to target section
-        isScrollingRef.current = true;
-        var targetScroll = targetSection * viewportHeight;
-
-        // Slow transition (1200ms) for smooth, deliberate feel
-        smoothScrollTo(container, targetScroll, 1200);
-
-        currentSectionRef.current = targetSection;
-        setCurrentSection(targetSection);
-
-        // Reset scrolling flag after animation
-        setTimeout(function() {
-          isScrollingRef.current = false;
-        }, 1300);
-      }, 50); // Quick response (50ms) for immediate feel
+      setTimeout(function() {
+        isScrollingRef.current = false;
+        wheelAccumulator = 0;
+      }, 1300);
     }
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
+    function handleWheel(e) {
+      e.preventDefault();
+
+      if (isScrollingRef.current) return;
+
+      wheelAccumulator += e.deltaY;
+
+      var targetSection = currentSectionRef.current;
+
+      if (wheelAccumulator > wheelThreshold) {
+        // Scrolling down
+        targetSection = currentSectionRef.current + 1;
+        if (targetSection >= sections.length) {
+          targetSection = 0; // Loop to first
+        }
+        wheelAccumulator = 0;
+        navigateToSection(targetSection);
+      } else if (wheelAccumulator < -wheelThreshold) {
+        // Scrolling up
+        targetSection = currentSectionRef.current - 1;
+        if (targetSection < 0) {
+          targetSection = sections.length - 1; // Loop to last
+        }
+        wheelAccumulator = 0;
+        navigateToSection(targetSection);
+      }
+    }
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
 
     return function() {
-      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('wheel', handleWheel);
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
