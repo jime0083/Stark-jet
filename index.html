@@ -123,14 +123,6 @@ function ArrowIcon() {
   );
 }
 
-// Back arrow icon
-function BackIcon() {
-  return h('svg', { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-    h('line', { x1: "19", y1: "12", x2: "5", y2: "12" }),
-    h('polyline', { points: "12 19 5 12 12 5" })
-  );
-}
-
 // Chevron down icon
 function ChevronDown() {
   return h('svg', { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
@@ -211,17 +203,23 @@ function DetailView(props) {
     height: initialRect.height + 'px'
   } : {};
 
+  // Handle click to close - stop propagation on links to prevent closing
+  function handleFrameClick(e) {
+    // Don't close if clicking on a link
+    if (e.target.tagName === 'A' || e.target.closest('a')) {
+      return;
+    }
+    onClose();
+  }
+
   return h('div', { className: "detail-overlay" + (isActive ? " active" : "") },
     h('div', {
       className: "expanding-frame" + (isExpanded ? " expanded" : ""),
-      style: frameStyle
+      style: frameStyle,
+      onClick: handleFrameClick
     },
       h('div', { className: "detail-content-wrapper" },
         h('div', { className: "detail-left" },
-          h('button', { className: "detail-back", onClick: onClose },
-            h(BackIcon),
-            "戻る"
-          ),
           h('div', { className: "detail-header" },
             h('h1', { className: "detail-title" }, data.title),
             h('p', { className: "detail-subtitle" }, data.subtitle)
@@ -236,8 +234,7 @@ function DetailView(props) {
         h('div', { className: "detail-right" },
           h('div', { className: "gallery" }, galleryImages),
           h('div', { className: "scroll-hint" },
-            h('span', null, "Scroll"),
-            h(ChevronDown)
+            h('span', null, "クリックで戻る")
           )
         )
       )
@@ -269,20 +266,24 @@ function App() {
   var scrollTimeoutRef = useRef(null);
 
   // Custom smooth scroll function with adjustable duration
+  // Using reference site's cubic-bezier(.52, 0, 0, 1) easing
   function smoothScrollTo(container, targetScroll, duration) {
     var startScroll = container.scrollTop;
     var distance = targetScroll - startScroll;
     var startTime = null;
 
-    function easeInOutCubic(t) {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    // Approximation of cubic-bezier(.52, 0, 0, 1)
+    // This creates a fast-start, ease-out effect
+    function customEase(t) {
+      // Fast acceleration at start, smooth deceleration at end
+      return 1 - Math.pow(1 - t, 3);
     }
 
     function animation(currentTime) {
       if (startTime === null) startTime = currentTime;
       var elapsed = currentTime - startTime;
       var progress = Math.min(elapsed / duration, 1);
-      var easeProgress = easeInOutCubic(progress);
+      var easeProgress = customEase(progress);
 
       container.scrollTop = startScroll + (distance * easeProgress);
 
@@ -345,15 +346,15 @@ function App() {
         isScrollingRef.current = true;
         var targetScroll = targetSection * viewportHeight;
 
-        // Use custom slow scroll (1500ms duration)
-        smoothScrollTo(container, targetScroll, 1500);
+        // Use reference site duration (600ms)
+        smoothScrollTo(container, targetScroll, 600);
 
         setCurrentSection(targetSection);
 
         // Reset scrolling flag after animation
         setTimeout(function() {
           isScrollingRef.current = false;
-        }, 1600);
+        }, 700);
       }, 100); // Wait 100ms after scroll stops
     }
 
@@ -383,11 +384,11 @@ function App() {
 
   function handleClose() {
     setIsExpanded(false);
-    // Wait for collapse animation, then hide
+    // Wait for collapse animation (0.6s), then hide
     setTimeout(function() {
       setSelectedSection(null);
       setInitialRect(null);
-    }, 800);
+    }, 600);
   }
 
   var sectionElements = sections.map(function(section, index) {
