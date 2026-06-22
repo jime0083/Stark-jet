@@ -566,12 +566,17 @@ function App() {
   }
 
   var sectionElements = sections.map(function(section, index) {
+    // ParticleText is visible only when:
+    // 1. This is the current section AND
+    // 2. No detail view is open (selectedSection is null)
+    var isParticleVisible = index === currentSection && selectedSection === null;
+
     return h(Section, {
       key: section.id,
       data: section,
       sectionRef: function(el) { sectionRefs.current[index] = el; },
       onClick: function() { handleSectionClick(section, index); },
-      isVisible: index === currentSection
+      isVisible: isParticleVisible
     });
   });
 
