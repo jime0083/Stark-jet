@@ -254,6 +254,8 @@ function App() {
   var sectionRefs = useRef([]);
   var isScrollingRef = useRef(false);
   var scrollTimeoutRef = useRef(null);
+  var lastScrollTopRef = useRef(0);
+  var currentSectionRef = useRef(0);
 
   // Custom smooth scroll function with adjustable duration
   // Matching reference site's cubic-bezier(.52, 0, 0, 1) easing
@@ -292,7 +294,7 @@ function App() {
     if (!container) return;
 
     var viewportHeight = window.innerHeight;
-    var threshold = 0.05; // 5% - very sensitive
+    var scrollThreshold = 30; // Minimum pixels to trigger section change
 
     function handleScroll() {
       if (isScrollingRef.current) return;
@@ -305,23 +307,31 @@ function App() {
       // Set timeout to check scroll position after user stops scrolling
       scrollTimeoutRef.current = setTimeout(function() {
         var newScrollTop = container.scrollTop;
-        var newCurrentSection = Math.floor(newScrollTop / viewportHeight);
-        var newOffset = newScrollTop % viewportHeight;
-        var newRatio = newOffset / viewportHeight;
+        var lastScrollTop = lastScrollTopRef.current;
+        var scrollDelta = newScrollTop - lastScrollTop;
 
-        // Determine target section
+        // Determine scroll direction and if threshold is met
+        if (Math.abs(scrollDelta) < scrollThreshold) {
+          // Snap back to current section if scroll was too small
+          var snapTarget = currentSectionRef.current * viewportHeight;
+          if (Math.abs(newScrollTop - snapTarget) > 1) {
+            isScrollingRef.current = true;
+            smoothScrollTo(container, snapTarget, 1200);
+            setTimeout(function() {
+              isScrollingRef.current = false;
+              lastScrollTopRef.current = snapTarget;
+            }, 1300);
+          }
+          return;
+        }
+
         var targetSection;
-        if (newRatio > threshold) {
+        if (scrollDelta > 0) {
           // Scrolled down - go to next section
-          targetSection = newCurrentSection + 1;
-        } else if (newRatio < -threshold) {
-          // Scrolled up - go to previous section
-          targetSection = newCurrentSection - 1;
-        } else if (newRatio > 0) {
-          // Small scroll - stay at current
-          targetSection = newCurrentSection;
+          targetSection = currentSectionRef.current + 1;
         } else {
-          return; // Already at section boundary
+          // Scrolled up - go to previous section
+          targetSection = currentSectionRef.current - 1;
         }
 
         // Loop handling
@@ -340,11 +350,13 @@ function App() {
         // Slow transition (1200ms) for smooth, deliberate feel
         smoothScrollTo(container, targetScroll, 1200);
 
+        currentSectionRef.current = targetSection;
         setCurrentSection(targetSection);
 
         // Reset scrolling flag after animation
         setTimeout(function() {
           isScrollingRef.current = false;
+          lastScrollTopRef.current = targetScroll;
         }, 1300);
       }, 50); // Quick response (50ms) for immediate feel
     }
