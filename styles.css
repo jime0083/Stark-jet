@@ -495,28 +495,4 @@ a, button, .section, .expanding-frame {
   }
 }
 
-/* Animation for page load - Reference site style */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 30px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-.section-left > * {
-  animation: fadeInUp 0.6s cubic-bezier(.52, 0, 0, 1) forwards;
-}
-
-.section-left > *:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-/* Section title transition on scroll */
-.section-title {
-  transition: transform 0.6s cubic-bezier(.52, 0, 0, 1),
-              opacity 0.6s cubic-bezier(.52, 0, 0, 1);
-}
+/* Section title uses particle animation only - no slide-in needed */
