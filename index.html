@@ -145,9 +145,10 @@ function ParticleText(props) {
 
     // Create particles from text
     function createParticles() {
-      var fontSize = Math.min(width * 0.15, 80);
+      var fontSize = Math.min(width * 0.18, 90);
       ctx.fillStyle = '#f0ece4';
-      ctx.font = 'bold ' + fontSize + 'px Helvetica Neue, Arial, sans-serif';
+      ctx.font = '700 ' + fontSize + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
+      ctx.letterSpacing = '-0.012em';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'left';
 
@@ -158,7 +159,7 @@ function ParticleText(props) {
       var imageData = ctx.getImageData(0, 0, width * 2, height * 2);
       var pixels = imageData.data;
       var particles = [];
-      var gap = 4; // Sample every 4 pixels
+      var gap = 2; // Denser sampling for more solid text appearance
 
       for (var y = 0; y < height * 2; y += gap) {
         for (var x = 0; x < width * 2; x += gap) {
@@ -172,8 +173,8 @@ function ParticleText(props) {
               originX: Math.random() * width - width / 2,
               originY: Math.random() * height + height,
               z: Math.random() * 100 - 50,
-              size: Math.random() * 2 + 1,
-              speed: Math.random() * 0.02 + 0.02
+              size: 1.2, // Consistent size for cleaner text
+              speed: Math.random() * 0.03 + 0.03
             });
           }
         }
@@ -206,27 +207,26 @@ function ParticleText(props) {
           p.y += (p.originY - p.y) * 0.05;
         }
 
-        // 3D perspective
-        var scale = 1 + p.z / 500;
-        var size = p.size * scale;
+        // Draw particle as small rectangle for cleaner text appearance
+        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Draw connecting lines to nearby particles
-        if (isVisible && i < particles.length - 1) {
-          var nextP = particles[i + 1];
-          var dx = nextP.x - p.x;
-          var dy = nextP.y - p.y;
-          var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 15) {
-            ctx.strokeStyle = 'rgba(240, 236, 228, 0.1)';
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(nextP.x, nextP.y);
-            ctx.stroke();
+        // Draw connecting lines for geometric effect (only when transitioning)
+        var dx = Math.abs(p.x - p.targetX);
+        var dy = Math.abs(p.y - p.targetY);
+        if (dx > 5 || dy > 5) {
+          if (i < particles.length - 1 && i % 3 === 0) {
+            var nextP = particles[i + 1];
+            var lineDx = nextP.x - p.x;
+            var lineDy = nextP.y - p.y;
+            var dist = Math.sqrt(lineDx * lineDx + lineDy * lineDy);
+            if (dist < 20) {
+              ctx.strokeStyle = 'rgba(240, 236, 228, 0.15)';
+              ctx.lineWidth = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(nextP.x, nextP.y);
+              ctx.stroke();
+            }
           }
         }
       }
