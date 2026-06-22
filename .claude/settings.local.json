@@ -3,7 +3,16 @@
     "allow": [
       "Bash(curl:*)",
       "Bash(lsof:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:www.thomasmonavon.com)",
+      "WebFetch(domain:goworkship.com)",
+      "WebFetch(domain:codepen.io)",
+      "WebSearch",
+      "WebFetch(domain:gist.github.com)"
     ]
   }
 }
