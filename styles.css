@@ -73,13 +73,14 @@ body {
   background: #151413;
 }
 
-/* Title container */
+/* Title container - clip overflow for reveal effect */
 .title-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   width: 100%;
   margin-bottom: 24px;
+  overflow: hidden;
 }
 
 .section-title {
@@ -89,14 +90,15 @@ body {
   line-height: 1.1;
   color: var(--text-cream);
   white-space: nowrap;
-  /* Initial state: hidden with diagonal clip from bottom-left */
-  clip-path: polygon(0% 100%, 0% 100%, 0% 100%);
-  transition: clip-path 1s cubic-bezier(.52, 0, 0, 1);
+  /* Initial state: hidden below + rotated for flowing effect */
+  transform: translateY(105%) rotate(8deg);
+  transform-origin: left center;
+  transition: transform 0.8s cubic-bezier(.52, 0, 0, 1);
 }
 
-/* Visible state: diagonal reveal flowing from bottom-left to top-right */
+/* Visible state: flow up with rotation reset */
 .section.visible .section-title {
-  clip-path: polygon(0% 100%, 0% 0%, 200% 0%);
+  transform: translateY(0) rotate(0deg);
 }
 
 /* Right column - 50% width */
