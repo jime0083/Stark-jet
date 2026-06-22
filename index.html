@@ -359,6 +359,44 @@ function DetailView(props) {
   );
 }
 
+// Custom Cursor Component
+function CustomCursor(props) {
+  var isDetailView = props.isDetailView;
+  var cursorRef = useRef(null);
+  var positionRef = useRef({ x: 0, y: 0 });
+  var targetRef = useRef({ x: 0, y: 0 });
+
+  useEffect(function() {
+    function handleMouseMove(e) {
+      targetRef.current = { x: e.clientX, y: e.clientY };
+    }
+
+    function animate() {
+      // Smooth follow with easing
+      positionRef.current.x += (targetRef.current.x - positionRef.current.x) * 0.15;
+      positionRef.current.y += (targetRef.current.y - positionRef.current.y) * 0.15;
+
+      if (cursorRef.current) {
+        cursorRef.current.style.transform =
+          'translate(' + positionRef.current.x + 'px, ' + positionRef.current.y + 'px)';
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    document.addEventListener('mousemove', handleMouseMove);
+    animate();
+
+    return function() {
+      document.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  return h('div', { className: 'custom-cursor', ref: cursorRef },
+    h('span', { className: 'cursor-label' }, isDetailView ? 'Close' : 'Open')
+  );
+}
+
 // Main App component
 function App() {
   var selectedState = useState(null);
@@ -528,6 +566,7 @@ function App() {
   });
 
   return h(Fragment, null,
+    h(CustomCursor, { isDetailView: selectedSection !== null }),
     h('div', {
       className: "scroll-container" + (selectedSection ? " hidden" : ""),
       ref: containerRef

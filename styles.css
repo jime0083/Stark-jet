@@ -28,6 +28,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   color: var(--text-cream);
+  cursor: none;
+}
+
+/* Custom Cursor */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+}
+
+.cursor-label {
+  display: block;
+  padding: 8px 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Hide default cursor on all elements */
+a, button, .section, .expanding-frame {
+  cursor: none;
 }
 
 /* Main scroll container */
