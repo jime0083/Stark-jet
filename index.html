@@ -433,6 +433,11 @@ function App() {
   var nextSection = nextSectionState[0];
   var setNextSection = nextSectionState[1];
 
+  // Track if animation should be active
+  var animatingState = useState(false);
+  var isAnimating = animatingState[0];
+  var setIsAnimating = animatingState[1];
+
   var containerRef = useRef(null);
   var sectionRefs = useRef([]);
   var isScrollingRef = useRef(false);
@@ -450,12 +455,17 @@ function App() {
       if (isScrollingRef.current) return;
 
       isScrollingRef.current = true;
+
+      // Set direction and next section together for initial positioning
+      setTransitionDirection(direction);
       setNextSection(targetIndex);
 
-      // Small delay to allow next section to be positioned before animating
-      setTimeout(function() {
-        setTransitionDirection(direction);
-      }, 50);
+      // Start animation after a frame to ensure initial position is rendered
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          setIsAnimating(true);
+        });
+      });
 
       // After animation, update current section
       setTimeout(function() {
@@ -463,6 +473,7 @@ function App() {
         setCurrentSection(targetIndex);
         setTransitionDirection(null);
         setNextSection(null);
+        setIsAnimating(false);
         isScrollingRef.current = false;
         wheelAccumulator = 0;
       }, 1300);
@@ -529,9 +540,14 @@ function App() {
   var isParticleVisible = selectedSection === null && transitionDirection === null;
 
   // Current section element
+  var currentSectionClass = 'section-wrapper';
+  if (isAnimating && transitionDirection) {
+    currentSectionClass += ' transitioning-' + transitionDirection;
+  }
+
   var currentSectionEl = h('div', {
     key: 'current-' + currentSection,
-    className: 'section-wrapper' + (transitionDirection ? ' transitioning-' + transitionDirection : ''),
+    className: currentSectionClass,
     ref: function(el) { sectionRefs.current[currentSection] = el; }
   },
     h('section', {
@@ -556,12 +572,12 @@ function App() {
   // Next section element (only during transition)
   var nextSectionClass = 'section-wrapper next-section';
   if (transitionDirection === 'down') {
-    nextSectionClass += ' from-bottom animating';
-  } else if (transitionDirection === 'up') {
-    nextSectionClass += ' from-top animating';
-  } else if (nextSection !== null) {
-    // Initial positioning without animation
     nextSectionClass += ' from-bottom';
+  } else if (transitionDirection === 'up') {
+    nextSectionClass += ' from-top';
+  }
+  if (isAnimating) {
+    nextSectionClass += ' animating';
   }
 
   var nextSectionEl = nextSectionData ? h('div', {
