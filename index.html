@@ -123,13 +123,6 @@ function ArrowIcon() {
   );
 }
 
-// Chevron down icon
-function ChevronDown() {
-  return h('svg', { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-    h('polyline', { points: "6 9 12 15 18 9" })
-  );
-}
-
 // Section component for main view
 function Section(props) {
   var data = props.data;
@@ -232,10 +225,7 @@ function DetailView(props) {
           )
         ),
         h('div', { className: "detail-right" },
-          h('div', { className: "gallery" }, galleryImages),
-          h('div', { className: "scroll-hint" },
-            h('span', null, "クリックで戻る")
-          )
+          h('div', { className: "gallery" }, galleryImages)
         )
       )
     )
