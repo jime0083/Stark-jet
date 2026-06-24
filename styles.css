@@ -365,6 +365,18 @@ a, button, .section, .expanding-frame {
   max-width: 480px;
 }
 
+.detail-map {
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 480px;
+}
+
+.detail-map iframe {
+  display: block;
+  border-radius: 8px;
+}
+
 .detail-meta {
   display: flex;
   flex-direction: column;
