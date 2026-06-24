@@ -365,16 +365,18 @@ a, button, .section, .expanding-frame {
   max-width: 480px;
 }
 
-.detail-map {
-  margin-bottom: 30px;
-  border-radius: 8px;
-  overflow: hidden;
-  max-width: 480px;
+.detail-map-link {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: var(--text-cream);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity var(--transition-fast);
 }
 
-.detail-map iframe {
-  display: block;
-  border-radius: 8px;
+.detail-map-link:hover {
+  opacity: 0.7;
 }
 
 .detail-meta {
