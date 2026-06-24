@@ -1,7 +1,7 @@
 :root {
-  --bg-dark: #0e0d0c;
-  --text-cream: #f0ece4;
-  --text-cream-muted: rgba(240, 236, 228, 0.7);
+  --bg-dark: #170B01;
+  --text-cream: #D3CFCC;
+  --text-cream-muted: rgba(211, 207, 204, 0.7);
   --accent: #c9a56c;
   /* Reference site uses Lay Grotesk - using similar modern grotesque */
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -164,7 +164,7 @@ a, button, .section, .expanding-frame {
 }
 
 .section:hover .section-left {
-  background: #151413;
+  background: #1E0F05;
 }
 
 /* Title container for particle canvas */
@@ -439,7 +439,7 @@ a, button, .section, .expanding-frame {
   overflow-y: scroll;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  background: #0a0a09;
+  background: #100800;
 }
 
 .detail-right::-webkit-scrollbar {

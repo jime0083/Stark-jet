@@ -158,7 +158,7 @@ function ParticleText(props) {
     // Create particles from text
     function createParticles() {
       var fontSize = Math.min(width * 0.18, 90);
-      ctx.fillStyle = '#f0ece4';
+      ctx.fillStyle = '#D3CFCC';
       ctx.font = '700 ' + fontSize + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
       ctx.letterSpacing = '-0.012em';
       ctx.textBaseline = 'middle';
@@ -204,7 +204,7 @@ function ParticleText(props) {
     // Animation loop
     function animate() {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#f0ece4';
+      ctx.fillStyle = '#D3CFCC';
 
       var particles = particlesRef.current;
       for (var i = 0; i < particles.length; i++) {
@@ -234,7 +234,7 @@ function ParticleText(props) {
             var lineDy = nextP.y - p.y;
             var dist = Math.sqrt(lineDx * lineDx + lineDy * lineDy);
             if (dist < 20) {
-              ctx.strokeStyle = 'rgba(240, 236, 228, 0.15)';
+              ctx.strokeStyle = 'rgba(211, 207, 204, 0.15)';
               ctx.lineWidth = 0.5;
               ctx.beginPath();
               ctx.moveTo(p.x, p.y);
