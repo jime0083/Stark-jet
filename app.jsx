@@ -8,7 +8,7 @@ const sections = [
     number: "01",
     image: "images/コーヒーとコーヒー豆1.png",
     detailTitle: "Welcome to Stark Jet",
-    description: "深煎りの豆と心地よい空間で、最高の一杯をお届けします。2015年の創業以来、こだわり抜いたコーヒーと温かいおもてなしで、多くのお客様にご愛顧いただいております。",
+    description: "各国の産地の最高の豆と心地よい空間で最高の一杯をお届けします。2015年の創業以来こだわり抜いたコーヒーと温かいおもてなしで、多くのお客様にご愛顧いただいております。",
     link: "#about",
     linkText: "About Us"
   },
@@ -18,7 +18,7 @@ const sections = [
     number: "02",
     image: "images/コーヒー豆1.png",
     detailTitle: "Our Philosophy",
-    description: "一杯のコーヒーに込める想い。厳選された産地から直接仕入れた豆を、熟練のロースターが丁寧に焙煎。豆本来の風味を最大限に引き出すことに全力を注いでいます。",
+    description: "一杯のコーヒーに込める想い。厳選された産地から直接仕入れた豆を熟練のロースターが丁寧に焙煎。豆本来の風味を最大限に引き出すことに全力を注いでいます。",
     link: "#philosophy",
     linkText: "Learn More"
   },
@@ -28,7 +28,7 @@ const sections = [
     number: "03",
     image: "images/ロケーション1.png",
     detailTitle: "Our Space",
-    description: "落ち着いた雰囲気の店内で、ゆったりとした時間をお過ごしください。木のぬくもりを感じる内装と、自然光が差し込む大きな窓が特徴です。Wi-Fi完備、電源席もご用意しております。",
+    description: "落ち着いた雰囲気の店内でゆったりとした時間をお過ごしください。木のぬくもりを感じる内装と、自然光が差し込む大きな窓が特徴です。Wi-Fi完備、電源席もご用意しております。",
     link: "#location",
     linkText: "View Map"
   },
