@@ -432,20 +432,84 @@ a, button, .section, .expanding-frame {
   transform: translateX(4px);
 }
 
-/* Detail Right - Image Gallery */
+/* Detail Right - Image Slider */
 .detail-right {
   width: 50%;
   height: 100%;
-  overflow-y: scroll;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow: hidden;
   background: #100800;
+  position: relative;
 }
 
-.detail-right::-webkit-scrollbar {
-  display: none;
+/* Image Slider */
+.image-slider {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(1.1);
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.4s,
+              transform 0.8s cubic-bezier(.52, 0, 0, 1) 0.4s;
 }
 
+.expanding-frame.expanded .image-slider {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.slider-track {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.slider-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(.52, 0, 0, 1);
+}
+
+.slider-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slider-indicators {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.slider-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--text-cream);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.slider-indicator:hover {
+  transform: scale(1.2);
+}
+
+.slider-indicator.active {
+  background: var(--text-cream);
+}
+
+/* Legacy gallery styles (keep for fallback) */
 .gallery {
   display: flex;
   flex-direction: column;
@@ -506,6 +570,16 @@ a, button, .section, .expanding-frame {
 
   .gallery-image {
     height: 50vh;
+  }
+
+  /* Slider responsive */
+  .slider-indicators {
+    bottom: 20px;
+  }
+
+  .slider-indicator {
+    width: 6px;
+    height: 6px;
   }
 }
 

@@ -34,7 +34,8 @@ var sections = [
     gallery: [
       "images/コーヒーとコーヒー豆1.png",
       "images/コーヒーとコーヒー豆2.png",
-      "images/ロケーション1.png"
+      "images/女性客1.png",
+      "images/男性客1.png"
     ]
   },
   {
@@ -42,14 +43,15 @@ var sections = [
     title: "Philosophy",
     image: "images/コーヒー豆1.png",
     subtitle: "Our Philosophy",
-    description: "一粒の種から生まれた、個性溢れるコーヒー豆。\n生産地から様々な通過点を経由し、カップに注がれるその瞬間まで、一粒のコーヒーの旅は続きます\nその素材本来の魅力を引き出すため、PASSAGE COFFEEのバリスタは、コーヒー豆を「コーヒー」に変える最後までこだわります。\n一粒の旅した道が、人々の日常に続き、コーヒーをもっと身近に感じてもらえるように。",
+    description: "一粒の種から生まれた個性溢れるコーヒー豆。\n生産地から様々な通過点を経由しカップに注がれるその瞬間まで一粒のコーヒーの旅は続きます\nその素材本来の魅力を引き出すためStark Jetのバリスタはコーヒー豆を「コーヒー」に変える最後までこだわります。\n一粒の旅した道が人々の日常に続き、コーヒーをもっと身近に感じてもらえるように。",
     meta: [],
     link: null,
     linkText: null,
     gallery: [
       "images/コーヒー豆1.png",
       "images/コーヒー豆2.png",
-      "images/コーヒー豆パック1.png"
+      "images/コーヒー豆パック1.png",
+      "images/コーヒー豆パック2.png"
     ]
   },
   {
@@ -57,14 +59,15 @@ var sections = [
     title: "Roasting",
     image: "images/ロケーション1.png",
     subtitle: "Our Roasting",
-    description: "ドイツ製PROBAT社のUG22とオランダ製GIESEN社のW6Aの2台の焙煎機を導入し、スペシャルティコーヒーに詰まった「素材由来の果実味」を最大限に引き出し仕上げています。\nデータ化された焙煎プロファイルを基に、ロースティングチームでのテイスティング、ディスカッションを重ね日々焙煎の研究を行なっています。",
+    description: "ドイツ製PROBAT社のUG22とオランダ製GIESEN社のW6Aの2台の焙煎機を導入し、スペシャルティコーヒーに詰まった「素材由来の果実味」を最大限に引き出し仕上げています。\nデータ化された焙煎プロファイルを基にロースティングチームでのテイスティング、ディスカッションを重ね日々焙煎の研究を行なっています。",
     meta: [],
     link: null,
     linkText: null,
     gallery: [
       "images/ロケーション1.png",
       "images/ロケーション2.png",
-      "images/カフェ外観1.png"
+      "images/男性客2.png",
+      "images/男性客3.png"
     ]
   },
   {
@@ -72,14 +75,15 @@ var sections = [
     title: "Sale",
     image: "images/コーヒー豆パック1.png",
     subtitle: "Coffee Beans",
-    description: "ご自宅でもStark Jetの味をお楽しみいただけます。エチオピア、コロンビア、ケニアなど、世界各地から厳選した豆を販売中。オンラインショップでもお買い求めいただけます。贈り物にも最適なギフトセットもご用意しております。",
+    description: "エチオピア、コロンビア、ケニアなど、世界各地からその時仕入れた最高の豆を販売中。贈り物にも最適なギフトセットもご用意しております。",
     meta: [],
     link: null,
     linkText: null,
     gallery: [
       "images/コーヒー豆パック1.png",
       "images/コーヒー豆パック2.png",
-      "images/コーヒー豆1.png"
+      "images/コーヒー豆1.png",
+      "images/コーヒー豆2.png"
     ]
   },
   {
@@ -87,7 +91,7 @@ var sections = [
     title: "VISIT US",
     image: "images/カフェ外観1.png",
     subtitle: "Come Visit",
-    description: "皆様のご来店を心よりお待ちしております。渋谷駅から徒歩5分、都会の喧騒を忘れられる静かな空間で、特別な一杯をお楽しみください。",
+    description: "皆様のご来店を心よりお待ちしております。渋谷駅から徒歩5分、静かな店内で特別な一杯をお楽しみください。",
     meta: [
       { label: "住所", value: "東京都渋谷区神南1-2-3" },
       { label: "営業時間", value: "8:00 - 21:00（年中無休）" },
@@ -99,7 +103,8 @@ var sections = [
     gallery: [
       "images/カフェ外観1.png",
       "images/カフェ外観2.png",
-      "images/ロケーション1.png"
+      "images/女性客2.png",
+      "images/男性客5.png"
     ]
   }
 ];
@@ -292,6 +297,74 @@ function Section(props) {
   );
 }
 
+// Image Slider Component
+function ImageSlider(props) {
+  var images = props.images;
+  var title = props.title;
+  var isActive = props.isActive;
+
+  var currentIndexState = useState(0);
+  var currentIndex = currentIndexState[0];
+  var setCurrentIndex = currentIndexState[1];
+
+  var intervalRef = useRef(null);
+
+  // Auto-slide effect
+  useEffect(function() {
+    if (isActive && images.length > 1) {
+      intervalRef.current = setInterval(function() {
+        setCurrentIndex(function(prev) {
+          return (prev + 1) % images.length;
+        });
+      }, 4000); // Change image every 4 seconds
+    }
+
+    return function() {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isActive, images.length]);
+
+  // Reset index when images change
+  useEffect(function() {
+    setCurrentIndex(0);
+  }, [images]);
+
+  var sliderImages = images.map(function(src, index) {
+    var isCurrentImage = index === currentIndex;
+    return h('div', {
+      key: index,
+      className: 'slider-slide' + (isCurrentImage ? ' active' : ''),
+      style: {
+        transform: 'translateX(' + ((index - currentIndex) * 100) + '%)'
+      }
+    },
+      h('img', {
+        src: src,
+        alt: title + " - Image " + (index + 1),
+        className: 'slider-image'
+      })
+    );
+  });
+
+  var indicators = images.map(function(_, index) {
+    return h('button', {
+      key: index,
+      className: 'slider-indicator' + (index === currentIndex ? ' active' : ''),
+      onClick: function(e) {
+        e.stopPropagation();
+        setCurrentIndex(index);
+      }
+    });
+  });
+
+  return h('div', { className: 'image-slider' },
+    h('div', { className: 'slider-track' }, sliderImages),
+    images.length > 1 ? h('div', { className: 'slider-indicators' }, indicators) : null
+  );
+}
+
 // Detail View with expanding animation
 function DetailView(props) {
   var data = props.data;
@@ -314,15 +387,6 @@ function DetailView(props) {
 
   if (!data) return null;
 
-  var galleryImages = data.gallery.map(function(src, index) {
-    return h('img', {
-      key: index,
-      src: src,
-      alt: data.title + " - Image " + (index + 1),
-      className: "gallery-image"
-    });
-  });
-
   var metaItems = data.meta.map(function(item, index) {
     return h('div', { key: index, className: "detail-meta-item" },
       h('span', { className: "detail-meta-label" }, item.label),
@@ -339,8 +403,8 @@ function DetailView(props) {
 
   // Handle click to close - stop propagation on links to prevent closing
   function handleFrameClick(e) {
-    // Don't close if clicking on a link
-    if (e.target.tagName === 'A' || e.target.closest('a')) {
+    // Don't close if clicking on a link or slider indicator
+    if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('.slider-indicators')) {
       return;
     }
     onClose();
@@ -387,7 +451,11 @@ function DetailView(props) {
           linkSection
         ),
         h('div', { className: "detail-right" },
-          h('div', { className: "gallery" }, galleryImages)
+          h(ImageSlider, {
+            images: data.gallery,
+            title: data.title,
+            isActive: isExpanded
+          })
         )
       )
     )
