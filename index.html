@@ -297,21 +297,19 @@ function Section(props) {
   );
 }
 
-// Gallery Component - vertical scrolling gallery (without first image, used after transition)
+// Gallery Component - vertical scrolling gallery with all images
 function Gallery(props) {
   var images = props.images;
   var title = props.title;
-  var skipFirst = props.skipFirst;
+  var firstImageRef = props.firstImageRef;
 
-  // Skip first image if specified (it's shown as transition image)
-  var imagesToShow = skipFirst ? images.slice(1) : images;
-
-  var galleryImages = imagesToShow.map(function(src, index) {
+  var galleryImages = images.map(function(src, index) {
     return h('img', {
       key: index,
       src: src,
-      alt: title + " - Image " + (index + (skipFirst ? 2 : 1)),
-      className: 'gallery-image'
+      alt: title + " - Image " + (index + 1),
+      className: 'gallery-image',
+      ref: index === 0 ? firstImageRef : null
     });
   });
 
@@ -331,20 +329,32 @@ function DetailView(props) {
   var isTransitionReady = transitionReadyState[0];
   var setIsTransitionReady = transitionReadyState[1];
 
-  // Reference for the gallery container to calculate target position
+  // State for hiding transition image after animation completes
+  var transitionCompleteState = useState(false);
+  var isTransitionComplete = transitionCompleteState[0];
+  var setIsTransitionComplete = transitionCompleteState[1];
+
+  // State for closing animation (show transition image again)
+  var isClosingState = useState(false);
+  var isClosing = isClosingState[0];
+  var setIsClosing = isClosingState[1];
+
+  // Reference for the gallery scroll container
   var galleryRef = useRef(null);
+  // Reference for the first gallery image
+  var firstImageRef = useRef(null);
 
   useEffect(function() {
     function handleKeyDown(e) {
       if (e.key === 'Escape' && isActive) {
-        onClose();
+        handleCloseClick();
       }
     }
     document.addEventListener('keydown', handleKeyDown);
     return function() {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isActive, onClose]);
+  }, [isActive]);
 
   // Trigger transition after mount
   useEffect(function() {
@@ -357,8 +367,50 @@ function DetailView(props) {
       });
     } else {
       setIsTransitionReady(false);
+      setIsTransitionComplete(false);
+      setIsClosing(false);
     }
   }, [isActive, imageRect]);
+
+  // Hide transition image after opening animation completes
+  useEffect(function() {
+    if (isTransitionReady && isExpanded && !isClosing) {
+      var timer = setTimeout(function() {
+        setIsTransitionComplete(true);
+      }, 850); // Wait for 0.8s transition + small buffer
+      return function() { clearTimeout(timer); };
+    }
+  }, [isTransitionReady, isExpanded, isClosing]);
+
+  // Handle close - scroll to first image if needed, then animate
+  function handleCloseClick() {
+    var gallery = galleryRef.current;
+
+    if (gallery && gallery.scrollTop > 50) {
+      // Need to scroll back to first image first
+      setIsClosing(true);
+
+      // Smooth scroll to top
+      gallery.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+      // Wait for scroll to complete, then show transition image and close
+      setTimeout(function() {
+        setIsTransitionComplete(false); // Show transition image
+        // Small delay to ensure transition image is visible before closing
+        setTimeout(function() {
+          onClose();
+        }, 50);
+      }, 500);
+    } else {
+      // Already at top, close immediately
+      setIsTransitionComplete(false);
+      setIsClosing(true);
+      onClose();
+    }
+  }
 
   if (!data) return null;
 
@@ -374,7 +426,7 @@ function DetailView(props) {
     if (e.target.tagName === 'A' || e.target.closest('a')) {
       return;
     }
-    onClose();
+    handleCloseClick();
   }
 
   // Only render map link if mapLink exists
@@ -411,7 +463,14 @@ function DetailView(props) {
     objectFit: 'cover'
   } : {};
 
-  var transitionImageClass = 'transition-image' + (isTransitionReady && isExpanded ? ' expanded' : '');
+  // Determine transition image class
+  var transitionImageClass = 'transition-image';
+  if (isTransitionReady && isExpanded) {
+    transitionImageClass += ' expanded';
+  }
+  if (isTransitionComplete && !isClosing) {
+    transitionImageClass += ' hidden';
+  }
 
   return h('div', {
     className: "detail-overlay" + (isActive ? " active" : ""),
@@ -444,7 +503,7 @@ function DetailView(props) {
         h(Gallery, {
           images: data.gallery,
           title: data.title,
-          skipFirst: true
+          firstImageRef: firstImageRef
         })
       )
     )

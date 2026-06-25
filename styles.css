@@ -252,6 +252,12 @@ a, button, .section, .expanding-frame {
               height 0.8s cubic-bezier(.52, 0, 0, 1);
 }
 
+/* Hide transition image after opening animation completes */
+.transition-image.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Detail view container */
 .detail-view {
   position: absolute;
@@ -344,6 +350,13 @@ a, button, .section, .expanding-frame {
   transform: translate3d(0, 0, 0);
   transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 1.05s,
               transform 0.6s cubic-bezier(.52, 0, 0, 1) 1.05s;
+}
+
+.detail-view.expanded .gallery-image:nth-child(4) {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 1.15s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 1.15s;
 }
 
 /* Detail Left - Description */
@@ -469,13 +482,11 @@ a, button, .section, .expanding-frame {
 }
 
 /* Gallery - vertical scroll layout */
-/* First image is shown as transition image, so gallery starts from padding-top that accounts for it */
+/* All images including first are in the gallery */
 .gallery {
   display: flex;
   flex-direction: column;
   padding: 60px 100px;
-  /* Add margin-top to account for the transition image (70vh max-height + gap) */
-  margin-top: calc(min((50vw - 200px) * 1.25, 70vh) + 100px);
   gap: 100px;
 }
 
@@ -536,7 +547,6 @@ a, button, .section, .expanding-frame {
 
   .gallery {
     padding: 40px 20px;
-    margin-top: calc(min((100vw - 40px) * 1.25, 60vh) + 60px);
     gap: 40px;
   }
 
