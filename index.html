@@ -709,10 +709,11 @@ function App() {
 
   function handleClose() {
     setIsExpanded(false);
+    // Wait for closing animation (0.8s) before clearing data
     setTimeout(function() {
       setSelectedSection(null);
       setInitialRect(null);
-    }, 600);
+    }, 850);
   }
 
   // Render current and next sections for transition

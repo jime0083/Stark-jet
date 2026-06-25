@@ -217,7 +217,7 @@ a, button, .section, .expanding-frame {
   pointer-events: none;
   background: #170B01;
   opacity: 0;
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1);
+  transition: opacity 0.8s cubic-bezier(.52, 0, 0, 1);
 }
 
 .detail-overlay.active {
@@ -227,8 +227,12 @@ a, button, .section, .expanding-frame {
 
 /* Transition image - animates from home position to detail position */
 .transition-image {
-  transition: none;
   will-change: top, left, width, height;
+  /* Closing animation - return to original position */
+  transition: top 0.8s cubic-bezier(.52, 0, 0, 1),
+              left 0.8s cubic-bezier(.52, 0, 0, 1),
+              width 0.8s cubic-bezier(.52, 0, 0, 1),
+              height 0.8s cubic-bezier(.52, 0, 0, 1);
 }
 
 .transition-image.expanded {
@@ -238,10 +242,11 @@ a, button, .section, .expanding-frame {
   width: calc(50% - 200px) !important;
   height: auto !important;
   aspect-ratio: 4 / 5;
-  transition: top 0.6s cubic-bezier(.52, 0, 0, 1),
-              left 0.6s cubic-bezier(.52, 0, 0, 1),
-              width 0.6s cubic-bezier(.52, 0, 0, 1),
-              height 0.6s cubic-bezier(.52, 0, 0, 1);
+  /* Opening animation - same timing */
+  transition: top 0.8s cubic-bezier(.52, 0, 0, 1),
+              left 0.8s cubic-bezier(.52, 0, 0, 1),
+              width 0.8s cubic-bezier(.52, 0, 0, 1),
+              height 0.8s cubic-bezier(.52, 0, 0, 1);
 }
 
 /* Detail view container */
@@ -254,15 +259,15 @@ a, button, .section, .expanding-frame {
   display: flex;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(.52, 0, 0, 1);
+  transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1);
 }
 
 .detail-view.expanded {
   opacity: 1;
-  transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1) 0.3s;
+  transition: opacity 0.5s cubic-bezier(.52, 0, 0, 1) 0.2s;
 }
 
-/* Text floating up animation - matching reference site */
+/* Text floating up animation - synced with image transition (0.8s) */
 .detail-view .detail-header,
 .detail-view .detail-description,
 .detail-view .detail-meta,
@@ -277,39 +282,39 @@ a, button, .section, .expanding-frame {
 .detail-view.expanded .detail-header {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.3s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.3s;
+  transition: opacity 0.8s cubic-bezier(.52, 0, 0, 1) 0.1s,
+              transform 0.8s cubic-bezier(.52, 0, 0, 1) 0.1s;
 }
 
 .detail-view.expanded .detail-description {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.4s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.4s;
+  transition: opacity 0.8s cubic-bezier(.52, 0, 0, 1) 0.15s,
+              transform 0.8s cubic-bezier(.52, 0, 0, 1) 0.15s;
 }
 
 .detail-view.expanded .detail-meta {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.5s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.5s;
+  transition: opacity 0.8s cubic-bezier(.52, 0, 0, 1) 0.2s,
+              transform 0.8s cubic-bezier(.52, 0, 0, 1) 0.2s;
 }
 
 .detail-view.expanded .detail-map-link {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.55s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.55s;
+  transition: opacity 0.8s cubic-bezier(.52, 0, 0, 1) 0.25s,
+              transform 0.8s cubic-bezier(.52, 0, 0, 1) 0.25s;
 }
 
 .detail-view.expanded .detail-link {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.6s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.6s;
+  transition: opacity 0.8s cubic-bezier(.52, 0, 0, 1) 0.3s,
+              transform 0.8s cubic-bezier(.52, 0, 0, 1) 0.3s;
 }
 
-/* Gallery images animation - appear after transition image */
+/* Gallery images animation - appear after transition image completes (0.8s) */
 .gallery-image {
   opacity: 0;
   transform: translate3d(0, 20px, 0);
@@ -320,22 +325,22 @@ a, button, .section, .expanding-frame {
 .detail-view.expanded .gallery-image:nth-child(1) {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.7s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.7s;
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.85s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.85s;
 }
 
 .detail-view.expanded .gallery-image:nth-child(2) {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.8s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.8s;
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.95s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.95s;
 }
 
 .detail-view.expanded .gallery-image:nth-child(3) {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.9s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.9s;
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 1.05s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 1.05s;
 }
 
 /* Detail Left - Description */
