@@ -18,8 +18,7 @@
 
 | 色コード | 用途 | 使用箇所 |
 |----------|------|----------|
-| #170B01 | メイン背景 | body, section-left, expanding-frame, detail-left, loading-screen |
-| #1E0F05 | ホバー時背景 | section:hover .section-left |
+| #170B01 | メイン背景 | body, section-left, section:hover, expanding-frame, detail-left, loading-screen |
 | #100800 | ギャラリー背景 | detail-right |
 
 ---
@@ -48,11 +47,10 @@
 ## 使用ファイル別
 
 ### styles.css
-- #170B01: 5箇所（背景色）
+- #170B01: 6箇所（背景色）
 - #D3CFCC: CSS変数定義
 - #D3CFCCB3: CSS変数定義
 - #c9a56c: CSS変数定義
-- #1E0F05: 1箇所（ホバー背景）
 - #100800: 1箇所（ギャラリー背景）
 - #000000, #000000E6, #000000CC: カーソル影
 - #D3CFCC33: 1箇所（プログレスバー背景）
