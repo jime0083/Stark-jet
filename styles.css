@@ -205,7 +205,7 @@ a, button, .section, .expanding-frame {
 }
 
 /* ============================================
-   Expanding Detail View
+   Detail View with Image Transition
    ============================================ */
 .detail-overlay {
   position: fixed;
@@ -215,116 +215,127 @@ a, button, .section, .expanding-frame {
   height: 100vh;
   z-index: 1000;
   pointer-events: none;
+  background: #170B01;
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1);
 }
 
 .detail-overlay.active {
   pointer-events: auto;
+  opacity: 1;
 }
 
-/* Expanding frame animation */
-.expanding-frame {
+/* Transition image - animates from home position to detail position */
+.transition-image {
+  transition: none;
+  will-change: top, left, width, height;
+}
+
+.transition-image.expanded {
+  /* Target position: right side, with padding, smaller size */
+  top: 60px !important;
+  left: calc(50% + 100px) !important;
+  width: calc(50% - 200px) !important;
+  height: auto !important;
+  aspect-ratio: 4 / 5;
+  transition: top 0.6s cubic-bezier(.52, 0, 0, 1),
+              left 0.6s cubic-bezier(.52, 0, 0, 1),
+              width 0.6s cubic-bezier(.52, 0, 0, 1),
+              height 0.6s cubic-bezier(.52, 0, 0, 1);
+}
+
+/* Detail view container */
+.detail-view {
   position: absolute;
-  background: #170B01;
-  overflow: hidden;
-  transform-origin: 50% 50%;
-  transition: top 0.8s cubic-bezier(.52, 0, 0, 1),
-              left 0.8s cubic-bezier(.52, 0, 0, 1),
-              width 0.8s cubic-bezier(.52, 0, 0, 1),
-              height 0.8s cubic-bezier(.52, 0, 0, 1);
-  cursor: pointer;
-}
-
-.expanding-frame.expanded {
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-}
-
-/* Detail content inside frame */
-.detail-content-wrapper {
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
+  cursor: pointer;
   opacity: 0;
-  /* Closing: fade out */
   transition: opacity 0.3s cubic-bezier(.52, 0, 0, 1);
 }
 
-.expanding-frame.expanded .detail-content-wrapper {
+.detail-view.expanded {
   opacity: 1;
-  /* Opening: delayed fade in */
-  transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1) 0.4s;
+  transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1) 0.3s;
 }
 
 /* Text floating up animation - matching reference site */
-.detail-left .detail-header,
-.detail-left .detail-description,
-.detail-left .detail-meta,
-.detail-left .detail-link {
+.detail-view .detail-header,
+.detail-view .detail-description,
+.detail-view .detail-meta,
+.detail-view .detail-map-link,
+.detail-view .detail-link {
   opacity: 0;
   transform: translate3d(0, 30px, 0);
-  /* Closing: slide out */
   transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1),
               transform 0.4s cubic-bezier(.52, 0, 0, 1);
 }
 
-.expanding-frame.expanded .detail-header {
+.detail-view.expanded .detail-header {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.3s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.3s;
+}
+
+.detail-view.expanded .detail-description {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.4s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.4s;
+}
+
+.detail-view.expanded .detail-meta {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.5s,
               transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.5s;
 }
 
-.expanding-frame.expanded .detail-description {
+.detail-view.expanded .detail-map-link {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.55s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.55s;
+}
+
+.detail-view.expanded .detail-link {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.6s,
               transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.6s;
 }
 
-.expanding-frame.expanded .detail-meta {
+/* Gallery images animation - appear after transition image */
+.gallery-image {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1),
+              transform 0.4s cubic-bezier(.52, 0, 0, 1);
+}
+
+.detail-view.expanded .gallery-image:nth-child(1) {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.7s,
               transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.7s;
 }
 
-.expanding-frame.expanded .detail-link {
+.detail-view.expanded .gallery-image:nth-child(2) {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.8s,
               transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.8s;
 }
 
-/* Gallery images animation */
-.gallery-image {
-  opacity: 0;
-  transform: translate3d(0, 20px, 0);
-  /* Closing: slide out */
-  transition: opacity 0.4s cubic-bezier(.52, 0, 0, 1),
-              transform 0.4s cubic-bezier(.52, 0, 0, 1);
-}
-
-.expanding-frame.expanded .gallery-image:nth-child(1) {
+.detail-view.expanded .gallery-image:nth-child(3) {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.5s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.5s;
-}
-
-.expanding-frame.expanded .gallery-image:nth-child(2) {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.6s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.6s;
-}
-
-.expanding-frame.expanded .gallery-image:nth-child(3) {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.7s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.7s;
+  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.9s,
+              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.9s;
 }
 
 /* Detail Left - Description */
@@ -449,20 +460,14 @@ a, button, .section, .expanding-frame {
 }
 
 /* Gallery - vertical scroll layout */
+/* First image is shown as transition image, so gallery starts from padding-top that accounts for it */
 .gallery {
   display: flex;
   flex-direction: column;
   padding: 60px 100px;
+  /* Add margin-top to account for the transition image */
+  margin-top: calc(((50vw - 200px) * 1.25) + 100px);
   gap: 100px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s cubic-bezier(.52, 0, 0, 1) 0.4s,
-              transform 0.6s cubic-bezier(.52, 0, 0, 1) 0.4s;
-}
-
-.expanding-frame.expanded .gallery {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .gallery-image {
@@ -471,34 +476,6 @@ a, button, .section, .expanding-frame {
   aspect-ratio: 4 / 5;
   object-fit: cover;
   display: block;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s cubic-bezier(.52, 0, 0, 1),
-              transform 0.5s cubic-bezier(.52, 0, 0, 1);
-}
-
-.expanding-frame.expanded .gallery-image:nth-child(1) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.5s;
-}
-
-.expanding-frame.expanded .gallery-image:nth-child(2) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.6s;
-}
-
-.expanding-frame.expanded .gallery-image:nth-child(3) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.7s;
-}
-
-.expanding-frame.expanded .gallery-image:nth-child(4) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.8s;
 }
 
 
@@ -549,11 +526,19 @@ a, button, .section, .expanding-frame {
 
   .gallery {
     padding: 40px 20px;
+    margin-top: calc(((100vw - 40px) * 1.25) + 60px);
     gap: 20px;
   }
 
   .gallery-image {
     aspect-ratio: 4 / 5;
+  }
+
+  /* Transition image for mobile */
+  .transition-image.expanded {
+    top: 40px !important;
+    left: 20px !important;
+    width: calc(100% - 40px) !important;
   }
 }
 

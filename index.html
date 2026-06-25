@@ -297,16 +297,20 @@ function Section(props) {
   );
 }
 
-// Gallery Component - vertical scrolling gallery
+// Gallery Component - vertical scrolling gallery (without first image, used after transition)
 function Gallery(props) {
   var images = props.images;
   var title = props.title;
+  var skipFirst = props.skipFirst;
 
-  var galleryImages = images.map(function(src, index) {
+  // Skip first image if specified (it's shown as transition image)
+  var imagesToShow = skipFirst ? images.slice(1) : images;
+
+  var galleryImages = imagesToShow.map(function(src, index) {
     return h('img', {
       key: index,
       src: src,
-      alt: title + " - Image " + (index + 1),
+      alt: title + " - Image " + (index + (skipFirst ? 2 : 1)),
       className: 'gallery-image'
     });
   });
@@ -314,13 +318,21 @@ function Gallery(props) {
   return h('div', { className: 'gallery' }, galleryImages);
 }
 
-// Detail View with expanding animation
+// Detail View with image transition animation
 function DetailView(props) {
   var data = props.data;
   var isActive = props.isActive;
   var isExpanded = props.isExpanded;
-  var initialRect = props.initialRect;
+  var imageRect = props.imageRect;
   var onClose = props.onClose;
+
+  // State for transition image position
+  var transitionReadyState = useState(false);
+  var isTransitionReady = transitionReadyState[0];
+  var setIsTransitionReady = transitionReadyState[1];
+
+  // Reference for the gallery container to calculate target position
+  var galleryRef = useRef(null);
 
   useEffect(function() {
     function handleKeyDown(e) {
@@ -334,6 +346,20 @@ function DetailView(props) {
     };
   }, [isActive, onClose]);
 
+  // Trigger transition after mount
+  useEffect(function() {
+    if (isActive && imageRect) {
+      // Small delay to ensure initial position is rendered
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          setIsTransitionReady(true);
+        });
+      });
+    } else {
+      setIsTransitionReady(false);
+    }
+  }, [isActive, imageRect]);
+
   if (!data) return null;
 
   var metaItems = data.meta.map(function(item, index) {
@@ -343,17 +369,9 @@ function DetailView(props) {
     );
   });
 
-  var frameStyle = initialRect ? {
-    top: initialRect.top + 'px',
-    left: initialRect.left + 'px',
-    width: initialRect.width + 'px',
-    height: initialRect.height + 'px'
-  } : {};
-
-  // Handle click to close - stop propagation on links to prevent closing
-  function handleFrameClick(e) {
-    // Don't close if clicking on a link or slider indicator
-    if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('.slider-indicators')) {
+  // Handle click to close
+  function handleOverlayClick(e) {
+    if (e.target.tagName === 'A' || e.target.closest('a')) {
       return;
     }
     onClose();
@@ -382,29 +400,48 @@ function DetailView(props) {
       )
     : null;
 
-  return h('div', { className: "detail-overlay" + (isActive ? " active" : "") },
-    h('div', {
-      className: "expanding-frame" + (isExpanded ? " expanded" : ""),
-      style: frameStyle,
-      onClick: handleFrameClick
-    },
-      h('div', { className: "detail-content-wrapper" },
-        h('div', { className: "detail-left" },
-          h('div', { className: "detail-header" },
-            h('h1', { className: "detail-title" }, data.title),
-            h('p', { className: "detail-subtitle" }, data.subtitle)
-          ),
-          h('p', { className: "detail-description" }, data.description),
-          metaSection,
-          mapLinkSection,
-          linkSection
+  // Transition image style - starts at original position, animates to target
+  var transitionImageStyle = imageRect ? {
+    position: 'fixed',
+    top: imageRect.top + 'px',
+    left: imageRect.left + 'px',
+    width: imageRect.width + 'px',
+    height: imageRect.height + 'px',
+    zIndex: 1001,
+    objectFit: 'cover'
+  } : {};
+
+  var transitionImageClass = 'transition-image' + (isTransitionReady && isExpanded ? ' expanded' : '');
+
+  return h('div', {
+    className: "detail-overlay" + (isActive ? " active" : ""),
+    onClick: handleOverlayClick
+  },
+    // Transition image - animates from home position to detail position
+    imageRect ? h('img', {
+      src: data.image,
+      alt: data.title,
+      className: transitionImageClass,
+      style: transitionImageStyle
+    }) : null,
+    // Detail content
+    h('div', { className: "detail-view" + (isExpanded ? " expanded" : "") },
+      h('div', { className: "detail-left" },
+        h('div', { className: "detail-header" },
+          h('h1', { className: "detail-title" }, data.title),
+          h('p', { className: "detail-subtitle" }, data.subtitle)
         ),
-        h('div', { className: "detail-right" },
-          h(Gallery, {
-            images: data.gallery,
-            title: data.title
-          })
-        )
+        h('p', { className: "detail-description" }, data.description),
+        metaSection,
+        mapLinkSection,
+        linkSection
+      ),
+      h('div', { className: "detail-right", ref: galleryRef },
+        h(Gallery, {
+          images: data.gallery,
+          title: data.title,
+          skipFirst: true
+        })
       )
     )
   );
@@ -656,8 +693,12 @@ function App() {
   function handleSectionClick(sectionData, index) {
     var sectionEl = sectionRefs.current[index];
     if (sectionEl) {
-      var rect = sectionEl.getBoundingClientRect();
-      setInitialRect(rect);
+      // Get the image element's position (right side of section)
+      var imageEl = sectionEl.querySelector('.section-image');
+      if (imageEl) {
+        var imageRect = imageEl.getBoundingClientRect();
+        setInitialRect(imageRect);
+      }
       setSelectedSection(sectionData);
 
       setTimeout(function() {
@@ -757,7 +798,7 @@ function App() {
       data: selectedSection,
       isActive: selectedSection !== null,
       isExpanded: isExpanded,
-      initialRect: initialRect,
+      imageRect: initialRect,
       onClose: handleClose
     })
   );
