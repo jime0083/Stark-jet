@@ -200,7 +200,7 @@ a, button, .section, .expanding-frame {
   transition: transform var(--transition-smooth);
 }
 
-.section:hover .section-image {
+.section-right:hover .section-image {
   transform: scale(1.05);
 }
 

@@ -436,7 +436,11 @@ function DetailView(props) {
         mapLinkSection,
         linkSection
       ),
-      h('div', { className: "detail-right", ref: galleryRef },
+      h('div', {
+        className: "detail-right",
+        ref: galleryRef,
+        onClick: function(e) { e.stopPropagation(); }
+      },
         h(Gallery, {
           images: data.gallery,
           title: data.title,
