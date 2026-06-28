@@ -396,15 +396,18 @@ function DetailView(props) {
         behavior: 'smooth'
       });
 
-      // Wait for scroll to complete, then show transition image and close
+      // Wait for scroll to complete
       setTimeout(function() {
-        // Now show transition image and start close animation
-        setIsTransitionComplete(false);
-        setIsClosing(true);
-        // Small delay to ensure transition image is rendered before closing
+        // Wait additional 0.5s after scroll completes, then show transition image
         setTimeout(function() {
-          onClose();
-        }, 100);
+          // Now show transition image and start close animation
+          setIsTransitionComplete(false);
+          setIsClosing(true);
+          // Small delay to ensure transition image is rendered before closing
+          setTimeout(function() {
+            onClose();
+          }, 100);
+        }, 500); // 0.5s delay after scroll
       }, 600); // Wait for smooth scroll to complete
     } else {
       // Already at top, close immediately
