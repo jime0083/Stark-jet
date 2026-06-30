@@ -382,9 +382,11 @@ function DetailView(props) {
     }
   }, [isTransitionReady, isExpanded, isClosing]);
 
-  // Handle wheel events anywhere in detail view to scroll gallery
+  // Handle wheel events anywhere in detail view to scroll gallery (desktop only)
   useEffect(function() {
     if (!isActive) return;
+    // Skip wheel handling on mobile
+    if (window.innerWidth <= 768) return;
 
     function handleWheel(e) {
       var gallery = galleryRef.current;
@@ -400,8 +402,41 @@ function DetailView(props) {
     };
   }, [isActive]);
 
+  // Auto-scroll gallery on mobile
+  useEffect(function() {
+    if (!isActive || !isExpanded) return;
+    // Only run on mobile
+    if (window.innerWidth > 768) return;
+
+    var gallery = galleryRef.current;
+    if (!gallery) return;
+
+    var currentIndex = 0;
+    var imageCount = data && data.gallery ? data.gallery.length : 0;
+    if (imageCount <= 1) return;
+
+    var intervalId = setInterval(function() {
+      currentIndex = (currentIndex + 1) % imageCount;
+      var imageWidth = gallery.scrollWidth / imageCount;
+      gallery.scrollTo({
+        left: currentIndex * imageWidth,
+        behavior: 'smooth'
+      });
+    }, 3000); // 3秒間隔で自動スクロール
+
+    return function() {
+      clearInterval(intervalId);
+    };
+  }, [isActive, isExpanded, data]);
+
   // Handle close - scroll to first image if needed, then animate
   function handleCloseClick() {
+    // On mobile, close immediately without transition animation
+    if (window.innerWidth <= 768) {
+      onClose();
+      return;
+    }
+
     var gallery = galleryRef.current;
 
     if (gallery && gallery.scrollTop > 50) {

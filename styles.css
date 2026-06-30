@@ -471,64 +471,111 @@ a, button, .section, .expanding-frame {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  /* ホーム画面: 見出し上部、画像下部 */
   .section {
     flex-direction: column;
   }
 
   .section-left {
     width: 100%;
-    height: 40%;
-    padding: 0 24px 24px;
-    justify-content: flex-end;
+    height: 35%;
+    padding: 60px 24px 20px;
+    justify-content: center;
   }
 
   .section-right {
     width: 100%;
-    height: 60%;
+    height: 65%;
+  }
+
+  .title-row {
+    height: 80px;
+    margin-bottom: 0;
   }
 
   .section-title {
     font-size: clamp(2rem, 8vw, 3rem);
   }
 
-  .detail-content-wrapper {
+  /* 詳細ビュー: 説明文上部、画像下部 */
+  .detail-view {
     flex-direction: column;
   }
 
   .detail-left {
     width: 100%;
-    height: 50%;
-    padding: 80px 24px 24px;
+    height: auto;
+    max-height: 45%;
+    padding: 60px 24px 24px;
+    justify-content: flex-start;
+    overflow-y: auto;
   }
 
   .detail-right {
     width: 100%;
-    height: 50%;
+    height: 55%;
+    flex: 1;
+  }
+
+  .detail-header {
+    margin-bottom: 16px;
   }
 
   .detail-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+
+  .detail-subtitle {
+    font-size: 0.9rem;
   }
 
   .detail-description {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 16px;
   }
 
+  .detail-meta {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .detail-meta-label,
+  .detail-meta-value {
+    font-size: 0.8rem;
+  }
+
+  /* ギャラリー: 横スクロール（自動スクロール用） */
   .gallery {
-    padding: 40px 20px;
-    gap: 40px;
+    flex-direction: row;
+    padding: 20px;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .gallery::-webkit-scrollbar {
+    display: none;
   }
 
   .gallery-image {
-    aspect-ratio: 4 / 5;
-    max-height: 60vh;
+    flex-shrink: 0;
+    width: calc(100% - 40px);
+    height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    object-fit: cover;
+    scroll-snap-align: center;
   }
 
-  /* Transition image for mobile */
-  .transition-image.expanded {
-    top: 40px !important;
-    left: 20px !important;
-    width: calc(100% - 40px) !important;
+  /* 遷移画像を非表示（モバイルでは遷移アニメーションなし） */
+  .transition-image {
+    display: none !important;
   }
 }
 
