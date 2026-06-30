@@ -577,6 +577,20 @@ a, button, .section, .expanding-frame {
   .transition-image {
     display: none !important;
   }
+
+  /* モバイルではカスタムカーソルを非表示 */
+  .custom-cursor {
+    display: none !important;
+  }
+
+  /* モバイルではデフォルトカーソルを表示 */
+  body {
+    cursor: auto;
+  }
+
+  a, button, .section, .expanding-frame {
+    cursor: auto;
+  }
 }
 
 /* Section title uses particle animation only - no slide-in needed */

@@ -733,13 +733,15 @@ function App() {
     }, 5000);
   }, []);
 
-  // Handle wheel events for section navigation
+  // Handle wheel and touch events for section navigation
   useEffect(function() {
     var container = containerRef.current;
     if (!container) return;
 
     var wheelAccumulator = 0;
     var wheelThreshold = 100;
+    var touchStartY = 0;
+    var touchThreshold = 50;
 
     function navigateToSection(targetIndex, direction) {
       if (isScrollingRef.current) return;
@@ -804,10 +806,42 @@ function App() {
       }
     }
 
+    // Touch event handlers for mobile
+    function handleTouchStart(e) {
+      touchStartY = e.touches[0].clientY;
+    }
+
+    function handleTouchEnd(e) {
+      if (isScrollingRef.current) return;
+
+      var touchEndY = e.changedTouches[0].clientY;
+      var deltaY = touchStartY - touchEndY;
+
+      if (deltaY > touchThreshold) {
+        // Swipe up - go to next section
+        var target = currentSectionRef.current + 1;
+        if (target >= sections.length) {
+          target = 0; // Loop to first
+        }
+        navigateToSection(target, 'down');
+      } else if (deltaY < -touchThreshold) {
+        // Swipe down - go to previous section
+        var target = currentSectionRef.current - 1;
+        if (target < 0) {
+          target = sections.length - 1; // Loop to last
+        }
+        navigateToSection(target, 'up');
+      }
+    }
+
     container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return function() {
       container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchend', handleTouchEnd);
     };
   }, []);
 
