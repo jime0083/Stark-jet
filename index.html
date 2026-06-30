@@ -382,6 +382,24 @@ function DetailView(props) {
     }
   }, [isTransitionReady, isExpanded, isClosing]);
 
+  // Handle wheel events anywhere in detail view to scroll gallery
+  useEffect(function() {
+    if (!isActive) return;
+
+    function handleWheel(e) {
+      var gallery = galleryRef.current;
+      if (gallery) {
+        e.preventDefault();
+        gallery.scrollTop += e.deltaY;
+      }
+    }
+
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    return function() {
+      document.removeEventListener('wheel', handleWheel);
+    };
+  }, [isActive]);
+
   // Handle close - scroll to first image if needed, then animate
   function handleCloseClick() {
     var gallery = galleryRef.current;
