@@ -549,14 +549,14 @@ a, button, .section, .expanding-frame {
     font-size: 0.8rem;
   }
 
-  /* ギャラリー: 横スクロール（自動スクロール用） */
+  /* ギャラリー: 縦スクロール（自動スクロール用） */
   .gallery {
-    flex-direction: row;
+    flex-direction: column;
     padding: 20px;
     gap: 20px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -568,12 +568,12 @@ a, button, .section, .expanding-frame {
 
   .gallery-image {
     flex-shrink: 0;
-    width: calc(100% - 40px);
-    height: 100%;
+    width: 100%;
+    height: calc(100% - 40px);
     max-height: none;
-    aspect-ratio: auto;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
-    scroll-snap-align: center;
+    scroll-snap-align: start;
   }
 
   /* 遷移画像を非表示（モバイルでは遷移アニメーションなし） */

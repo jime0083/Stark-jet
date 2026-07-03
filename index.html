@@ -420,9 +420,9 @@ function DetailView(props) {
 
     var intervalId = setInterval(function() {
       currentIndex = (currentIndex + 1) % imageCount;
-      var imageWidth = gallery.scrollWidth / imageCount;
+      var imageHeight = gallery.scrollHeight / imageCount;
       gallery.scrollTo({
-        left: currentIndex * imageWidth,
+        top: currentIndex * imageHeight,
         behavior: 'smooth'
       });
     }, 3000); // 3秒間隔で自動スクロール
