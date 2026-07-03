@@ -301,20 +301,48 @@ function Section(props) {
 }
 
 // Gallery Component - vertical scrolling gallery with all images
+// On mobile, adds clone images for infinite loop
 function Gallery(props) {
   var images = props.images;
   var title = props.title;
   var firstImageRef = props.firstImageRef;
+  var isMobile = props.isMobile;
 
-  var galleryImages = images.map(function(src, index) {
-    return h('img', {
+  var galleryImages = [];
+
+  if (isMobile && images.length > 1) {
+    // Add last image clone at the beginning for infinite loop
+    galleryImages.push(h('img', {
+      key: 'clone-start',
+      src: images[images.length - 1],
+      alt: title + " - Clone Start",
+      className: 'gallery-image gallery-clone',
+      'data-clone': 'start'
+    }));
+  }
+
+  // Original images
+  images.forEach(function(src, index) {
+    galleryImages.push(h('img', {
       key: index,
       src: src,
       alt: title + " - Image " + (index + 1),
       className: 'gallery-image',
-      ref: index === 0 ? firstImageRef : null
-    });
+      ref: index === 0 ? firstImageRef : null,
+      'data-index': index
+    }));
   });
+
+  if (isMobile && images.length > 1) {
+    // Add first image clone at the end for infinite loop
+    galleryImages.push(h('img', {
+      key: 'clone-end',
+      src: images[0],
+      alt: title + " - Clone End",
+      className: 'gallery-image gallery-clone',
+      'data-clone': 'end'
+    }));
+  }
 
   return h('div', { className: 'gallery' }, galleryImages);
 }
@@ -405,24 +433,87 @@ function DetailView(props) {
     };
   }, [isActive]);
 
-  // Auto-scroll gallery on mobile
+  // Check if mobile
+  var isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
+  // Set initial scroll position to first real image (after clone) on mobile
   useEffect(function() {
     if (!isActive || !isExpanded) return;
-    // Only run on mobile
-    if (window.innerWidth > 768) return;
+    if (!isMobile) return;
 
     var gallery = galleryRef.current;
     if (!gallery) return;
 
-    var currentIndex = 0;
     var imageCount = data && data.gallery ? data.gallery.length : 0;
     if (imageCount <= 1) return;
 
+    // Total images including clones: imageCount + 2
+    var totalImages = imageCount + 2;
+    var imageHeight = gallery.scrollHeight / totalImages;
+
+    // Set initial position to first real image (index 1, after clone-start)
+    gallery.scrollTop = imageHeight;
+  }, [isActive, isExpanded, data, isMobile]);
+
+  // Infinite loop scroll handler for mobile
+  useEffect(function() {
+    if (!isActive || !isExpanded) return;
+    if (!isMobile) return;
+
+    var gallery = galleryRef.current;
+    if (!gallery) return;
+
+    var imageCount = data && data.gallery ? data.gallery.length : 0;
+    if (imageCount <= 1) return;
+
+    var totalImages = imageCount + 2; // Including clones
+    var isJumping = false;
+
+    function handleScroll() {
+      if (isJumping) return;
+
+      var imageHeight = gallery.scrollHeight / totalImages;
+      var scrollTop = gallery.scrollTop;
+
+      // If scrolled to clone-start (top), jump to last real image
+      if (scrollTop <= 0) {
+        isJumping = true;
+        gallery.scrollTop = imageHeight * imageCount; // Last real image position
+        setTimeout(function() { isJumping = false; }, 50);
+      }
+      // If scrolled to clone-end (bottom), jump to first real image
+      else if (scrollTop >= imageHeight * (totalImages - 1)) {
+        isJumping = true;
+        gallery.scrollTop = imageHeight; // First real image position
+        setTimeout(function() { isJumping = false; }, 50);
+      }
+    }
+
+    gallery.addEventListener('scroll', handleScroll);
+    return function() {
+      gallery.removeEventListener('scroll', handleScroll);
+    };
+  }, [isActive, isExpanded, data, isMobile]);
+
+  // Auto-scroll gallery on mobile with infinite loop
+  useEffect(function() {
+    if (!isActive || !isExpanded) return;
+    // Only run on mobile
+    if (!isMobile) return;
+
+    var gallery = galleryRef.current;
+    if (!gallery) return;
+
+    var imageCount = data && data.gallery ? data.gallery.length : 0;
+    if (imageCount <= 1) return;
+
+    var totalImages = imageCount + 2; // Including clones
+
     var intervalId = setInterval(function() {
-      currentIndex = (currentIndex + 1) % imageCount;
-      var imageHeight = gallery.scrollHeight / imageCount;
-      gallery.scrollTo({
-        top: currentIndex * imageHeight,
+      var imageHeight = gallery.scrollHeight / totalImages;
+      // Smooth scroll to next image
+      gallery.scrollBy({
+        top: imageHeight,
         behavior: 'smooth'
       });
     }, 3000); // 3秒間隔で自動スクロール
@@ -430,7 +521,7 @@ function DetailView(props) {
     return function() {
       clearInterval(intervalId);
     };
-  }, [isActive, isExpanded, data]);
+  }, [isActive, isExpanded, data, isMobile]);
 
   // Handle close - scroll to first image if needed, then animate
   function handleCloseClick() {
@@ -564,7 +655,8 @@ function DetailView(props) {
         h(Gallery, {
           images: data.gallery,
           title: data.title,
-          firstImageRef: firstImageRef
+          firstImageRef: firstImageRef,
+          isMobile: isMobile
         })
       )
     )
