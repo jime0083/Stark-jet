@@ -492,7 +492,9 @@ a, button, .section, .expanding-frame {
   }
 
   .title-row {
-    height: 80px;
+    /* フォントサイズ(幅×0.18、上限90px)の斜体ディセンダーまで収まる高さ
+       (必要高さ ≒ フォントサイズ×1.35) */
+    height: min(25vw, 125px);
     margin-bottom: 0;
   }
 

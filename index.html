@@ -341,6 +341,15 @@ function Gallery(props) {
       className: 'gallery-image gallery-clone',
       'data-clone': 'end'
     }));
+    // Add second image clone after clone-end so the next-image peek below
+    // clone-end matches the first real image position (seamless loop jump)
+    galleryImages.push(h('img', {
+      key: 'clone-end-2',
+      src: images[1],
+      alt: title + " - Clone End 2",
+      className: 'gallery-image gallery-clone',
+      'data-clone': 'end-2'
+    }));
   }
 
   return h('div', { className: 'gallery' }, galleryImages);
@@ -443,12 +452,11 @@ function DetailView(props) {
     var imageCount = data && data.gallery ? data.gallery.length : 0;
     if (imageCount <= 1) return;
 
-    // Total images including clones: imageCount + 2
-    var totalImages = imageCount + 2;
-    var imageHeight = gallery.scrollHeight / totalImages;
-
-    // Set initial position to first real image (index 1, after clone-start)
-    gallery.scrollTop = imageHeight;
+    var imgs = gallery.querySelectorAll('.gallery-image');
+    if (imgs.length > 1) {
+      // 20px = .gallery top padding (mobile)
+      gallery.scrollTop = imgs[1].offsetTop - 20;
+    }
   }, [isActive, isExpanded, data, isMobile]);
 
   // Infinite loop scroll handler for mobile
@@ -462,25 +470,28 @@ function DetailView(props) {
     var imageCount = data && data.gallery ? data.gallery.length : 0;
     if (imageCount <= 1) return;
 
-    var totalImages = imageCount + 2; // Including clones
     var isJumping = false;
 
     function handleScroll() {
       if (isJumping) return;
 
-      var imageHeight = gallery.scrollHeight / totalImages;
+      var imgs = gallery.querySelectorAll('.gallery-image');
+      if (imgs.length <= imageCount + 1) return;
+
+      // Distance of one full loop (first real image -> clone of first image)
+      var period = imgs[imageCount + 1].offsetTop - imgs[1].offsetTop;
       var scrollTop = gallery.scrollTop;
 
-      // If scrolled to clone-start (top), jump to last real image
+      // Scrolled into clone-start (top) - shift forward by one loop (seamless)
       if (scrollTop <= 0) {
         isJumping = true;
-        gallery.scrollTop = imageHeight * imageCount; // Last real image position
+        gallery.scrollTop = scrollTop + period;
         setTimeout(function() { isJumping = false; }, 50);
       }
-      // If scrolled to clone-end (bottom), jump to first real image
-      else if (scrollTop >= imageHeight * (totalImages - 1)) {
+      // Scrolled into end clones (bottom) - shift back by one loop (seamless)
+      else if (scrollTop >= imgs[imageCount + 1].offsetTop - 20) {
         isJumping = true;
-        gallery.scrollTop = imageHeight; // First real image position
+        gallery.scrollTop = scrollTop - period;
         setTimeout(function() { isJumping = false; }, 50);
       }
     }
@@ -503,16 +514,17 @@ function DetailView(props) {
     var imageCount = data && data.gallery ? data.gallery.length : 0;
     if (imageCount <= 1) return;
 
-    var totalImages = imageCount + 2; // Including clones
-
     var intervalId = setInterval(function() {
-      var imageHeight = gallery.scrollHeight / totalImages;
+      var imgs = gallery.querySelectorAll('.gallery-image');
+      if (imgs.length < 3) return;
+      // Exact distance between adjacent images
+      var step = imgs[2].offsetTop - imgs[1].offsetTop;
       // Smooth scroll to next image
       gallery.scrollBy({
-        top: imageHeight,
+        top: step,
         behavior: 'smooth'
       });
-    }, 3000); // 3秒間隔で自動スクロール
+    }, 1000); // 1秒間隔で自動スクロール
 
     return function() {
       clearInterval(intervalId);
@@ -544,7 +556,7 @@ function DetailView(props) {
     }
   }, [isActive, isExpanded, data, isMobile]);
 
-  // Desktop: auto-scroll gallery every 2s with seamless infinite loop
+  // Desktop: auto-scroll gallery with seamless infinite loop
   useEffect(function() {
     if (!isActive || !isExpanded) return;
     if (isMobile) return;
@@ -556,37 +568,29 @@ function DetailView(props) {
     if (imageCount <= 1) return;
 
     var childIndex = 1; // index 0 is clone-start
-    var jumpTimer = null;
 
     var intervalId = setInterval(function() {
       if (closingRef.current) return;
       var imgs = gallery.querySelectorAll('.gallery-image');
-      if (!imgs.length) return;
+      if (imgs.length <= imageCount + 1) return;
+
+      // Resting on clone-end: the view (image + next-image peek from the
+      // second clone) is identical to the first real image position,
+      // so reposition instantly - unnoticeable - before the next slide
+      if (childIndex >= imageCount + 1) {
+        gallery.scrollTop = imgs[1].offsetTop - 60;
+        childIndex = 1;
+      }
 
       childIndex += 1;
-      var target = imgs[childIndex];
-      if (!target) {
-        childIndex = 1;
-        target = imgs[1];
-      }
       gallery.scrollTo({
-        top: target.offsetTop - 60,
+        top: imgs[childIndex].offsetTop - 60,
         behavior: 'smooth'
       });
-
-      // clone-end shows the same image as the first - jump back seamlessly
-      if (childIndex === imageCount + 1) {
-        jumpTimer = setTimeout(function() {
-          if (closingRef.current) return;
-          gallery.scrollTop = imgs[1].offsetTop - 60;
-          childIndex = 1;
-        }, 900);
-      }
-    }, 2000); // 2秒間隔で自動スクロール
+    }, 1000); // 1秒間隔で自動スクロール
 
     return function() {
       clearInterval(intervalId);
-      if (jumpTimer) clearTimeout(jumpTimer);
     };
   }, [isActive, isExpanded, data, isMobile]);
 
@@ -609,6 +613,12 @@ function DetailView(props) {
       var imgs = gallery.querySelectorAll('.gallery-image');
       if (imgs.length > 1) {
         basePos = imgs[1].offsetTop - 60;
+        // Resting on clone-end (visually identical to the first image):
+        // remap instantly so we can close without a long reverse scroll
+        var cloneEndPos = imgs[imgs.length - 2].offsetTop - 60;
+        if (Math.abs(gallery.scrollTop - cloneEndPos) < 50) {
+          gallery.scrollTop = basePos;
+        }
       }
     }
 
