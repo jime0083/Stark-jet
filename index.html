@@ -301,16 +301,15 @@ function Section(props) {
 }
 
 // Gallery Component - vertical scrolling gallery with all images
-// On mobile, adds clone images for infinite loop
+// Adds clone images at both ends for infinite loop
 function Gallery(props) {
   var images = props.images;
   var title = props.title;
   var firstImageRef = props.firstImageRef;
-  var isMobile = props.isMobile;
 
   var galleryImages = [];
 
-  if (isMobile && images.length > 1) {
+  if (images.length > 1) {
     // Add last image clone at the beginning for infinite loop
     galleryImages.push(h('img', {
       key: 'clone-start',
@@ -333,7 +332,7 @@ function Gallery(props) {
     }));
   });
 
-  if (isMobile && images.length > 1) {
+  if (images.length > 1) {
     // Add first image clone at the end for infinite loop
     galleryImages.push(h('img', {
       key: 'clone-end',
@@ -413,18 +412,15 @@ function DetailView(props) {
     }
   }, [isTransitionReady, isExpanded, isClosing]);
 
-  // Handle wheel events anywhere in detail view to scroll gallery (desktop only)
+  // Block manual wheel scrolling in detail view (desktop only)
+  // Gallery moves only by auto-scroll (暫定対応、後で変更の可能性あり)
   useEffect(function() {
     if (!isActive) return;
     // Skip wheel handling on mobile
     if (window.innerWidth <= 768) return;
 
     function handleWheel(e) {
-      var gallery = galleryRef.current;
-      if (gallery) {
-        e.preventDefault();
-        gallery.scrollTop += e.deltaY;
-      }
+      e.preventDefault();
     }
 
     document.addEventListener('wheel', handleWheel, { passive: false });
@@ -523,6 +519,77 @@ function DetailView(props) {
     };
   }, [isActive, isExpanded, data, isMobile]);
 
+  // Ref to pause auto-scroll while closing animation is running
+  var closingRef = useRef(false);
+
+  // Reset closing flag when detail view opens
+  useEffect(function() {
+    if (isActive) {
+      closingRef.current = false;
+    }
+  }, [isActive]);
+
+  // Desktop: set initial scroll position to first real image (after clone)
+  useEffect(function() {
+    if (!isActive || !isExpanded) return;
+    if (isMobile) return;
+
+    var gallery = galleryRef.current;
+    if (!gallery) return;
+
+    var imgs = gallery.querySelectorAll('.gallery-image');
+    if (imgs.length > 1) {
+      // 60px = .gallery top padding (desktop)
+      gallery.scrollTop = imgs[1].offsetTop - 60;
+    }
+  }, [isActive, isExpanded, data, isMobile]);
+
+  // Desktop: auto-scroll gallery every 2s with seamless infinite loop
+  useEffect(function() {
+    if (!isActive || !isExpanded) return;
+    if (isMobile) return;
+
+    var gallery = galleryRef.current;
+    if (!gallery) return;
+
+    var imageCount = data && data.gallery ? data.gallery.length : 0;
+    if (imageCount <= 1) return;
+
+    var childIndex = 1; // index 0 is clone-start
+    var jumpTimer = null;
+
+    var intervalId = setInterval(function() {
+      if (closingRef.current) return;
+      var imgs = gallery.querySelectorAll('.gallery-image');
+      if (!imgs.length) return;
+
+      childIndex += 1;
+      var target = imgs[childIndex];
+      if (!target) {
+        childIndex = 1;
+        target = imgs[1];
+      }
+      gallery.scrollTo({
+        top: target.offsetTop - 60,
+        behavior: 'smooth'
+      });
+
+      // clone-end shows the same image as the first - jump back seamlessly
+      if (childIndex === imageCount + 1) {
+        jumpTimer = setTimeout(function() {
+          if (closingRef.current) return;
+          gallery.scrollTop = imgs[1].offsetTop - 60;
+          childIndex = 1;
+        }, 900);
+      }
+    }, 2000); // 2秒間隔で自動スクロール
+
+    return function() {
+      clearInterval(intervalId);
+      if (jumpTimer) clearTimeout(jumpTimer);
+    };
+  }, [isActive, isExpanded, data, isMobile]);
+
   // Handle close - scroll to first image if needed, then animate
   function handleCloseClick() {
     // On mobile, close immediately without transition animation
@@ -531,15 +598,27 @@ function DetailView(props) {
       return;
     }
 
+    // Stop auto-scroll while closing
+    closingRef.current = true;
+
     var gallery = galleryRef.current;
 
-    if (gallery && gallery.scrollTop > 50) {
+    // First real image position (index 0 is clone-start)
+    var basePos = 0;
+    if (gallery) {
+      var imgs = gallery.querySelectorAll('.gallery-image');
+      if (imgs.length > 1) {
+        basePos = imgs[1].offsetTop - 60;
+      }
+    }
+
+    if (gallery && Math.abs(gallery.scrollTop - basePos) > 50) {
       // Need to scroll back to first image first
       // Keep transition image hidden during scroll (don't set isClosing yet)
 
-      // Smooth scroll to top
+      // Smooth scroll to first image
       gallery.scrollTo({
-        top: 0,
+        top: basePos,
         behavior: 'smooth'
       });
 
@@ -655,8 +734,7 @@ function DetailView(props) {
         h(Gallery, {
           images: data.gallery,
           title: data.title,
-          firstImageRef: firstImageRef,
-          isMobile: isMobile
+          firstImageRef: firstImageRef
         })
       )
     )
